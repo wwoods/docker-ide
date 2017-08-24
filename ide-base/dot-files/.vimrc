@@ -280,10 +280,99 @@ func! s:WWvlog_rebaseCommit()
     silent! execute '!git rebase -i ' . l:commit
     call s:WWvlog_refresh()
 endfunc
+func! s:WWvlog_diffFile_quit()
+    let l:pastwin = b:WWvlog_winPast
+    let l:mainwin = b:WWvlog_winMain
+    let l:nextwin = b:WWvlog_winNext
+
+    call win_gotoid(l:mainwin)
+    if &modified
+        " OK to quit... it's going to quit anyway.
+        "echom "Cannot quit; unsaved changes!"
+        "return
+    endif
+
+    augroup WWvlog_diffFile_quit
+        autocmd! * <buffer>
+    augroup END
+
+    call win_gotoid(l:pastwin)
+    silent! execute 'q'
+    call win_gotoid(l:nextwin)
+    silent! execute 'q'
+    call win_gotoid(l:mainwin)
+    silent! execute 'q'
+endfunc
+func! s:WWvlog_diffFile(commit, file, toWorkingTree)
+    let l:style = 'keepalt vert '
+    if a:toWorkingTree
+        " Open the working version
+        silent! execute 'split ' . a:file
+    else
+        " Open the version from 
+    endif
+
+    diffthis
+    let l:filetype = &filetype
+
+    let l:splitter = &splitright
+    let l:mainwin = win_getid()
+
+    " Diff against the version before the commit
+    set nosplitright
+    vertical new
+    setlocal buftype=nofile bufhidden=wipe noswapfile
+    execute 'setlocal filetype=' . l:filetype
+    let l:cmd = 'git show ' . a:commit . ':' . fnamemodify(a:file, ':p:.')
+    silent! execute 'read !' . escape(l:cmd, '%')
+    execute '0'
+    normal! dd
+    setlocal nomodifiable
+    diffthis
+    let l:pastwin = win_getid()
+
+    " Diff against the current version, frozen
+    silent! execute l:mainwin . ' wincmd p'
+    set splitright
+    vertical new
+    setlocal buftype=nofile bufhidden=wipe noswapfile
+    execute 'setlocal filetype=' . l:filetype
+    let l:nextwin = win_getid()
+    silent! execute l:mainwin . ' wincmd p'
+    execute '%y'
+    silent! execute l:nextwin . ' wincmd p'
+    normal! p
+    execute '0'
+    normal! dd
+    setlocal nomodifiable
+    diffthis
+
+    let &splitright = l:splitter
+
+    " Store window ID, go back to main file
+    silent! execute l:mainwin . ' wincmd p'
+    let b:WWvlog_winPast = l:pastwin
+    let b:WWvlog_winMain = l:mainwin
+    let b:WWvlog_winNext = l:nextwin
+
+    " Whenever the main buffer exits, quit them all.
+    augroup WWvlog_diffFile_quit
+        autocmd! * <buffer>
+        autocmd WinLeave <buffer> call <SID>WWvlog_diffFile_quit()
+    augroup END
+    nnoremap <silent> <buffer> q :q<cr>
+    nnoremap <silent> <buffer> < :execute 'diffget ' . winbufnr(b:WWvlog_winPast)<cr>:diffupdate<cr>
+    nnoremap <silent> <buffer> > :execute 'diffget ' . winbufnr(b:WWvlog_winNext)<cr>:diffupdate<cr>
+endfunc
 func! s:WWvlog_viewCommit(mode, file)
     " Function for viewing a given commit diff
     let l:commit = s:WWvlog_getCommit()
     if empty(l:commit)
+        return
+    endif
+
+    if !empty(a:mode) && !empty(a:file)
+        call s:WWvlog_diffFile(l:commit, a:file, v:true)
         return
     endif
 
