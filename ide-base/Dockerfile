@@ -9,7 +9,7 @@ ENV LC_ALL=C.UTF-8
 RUN apt-get update \
         && apt-get upgrade -y \
         && apt-get update \
-        && apt-get install -y curl htop man vim p7zip zip unzip ssh git \
+        && apt-get install -y curl htop man vim p7zip zip unzip ssh git git-svn \
         && apt-get install -y --no-install-recommends \
             autoconf automake pkg-config gcc g++ tmux
 
