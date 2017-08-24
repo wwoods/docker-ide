@@ -1,0 +1,64 @@
+#!/usr/bin/env python3
+
+# Based on https://github.com/client9/dmnt/blob/master/dmnt.go
+
+import click
+import json
+import os
+import subprocess
+
+def containerId():
+    cid = os.environ.get('HOSTNAME', '')
+    # Docker containers 12-len hex string
+    if len(cid) != 12:
+        return None
+    return cid
+
+
+def getPath(frm, to):
+    frm = os.path.abspath(frm)
+    cid = containerId()
+    if not cid:
+        # Normal path, not a container
+        return '{}:{}'.format(frm, to)
+
+    try:
+        output = subprocess.check_output(['docker', 'inspect', cid])
+    except:
+        return '{}:{}'.format(frm, to)
+
+    containers = json.loads(output)
+    if len(containers) != 1:
+        raise ValueError("More than one container?")
+
+    mounts = containers[0]['Mounts']
+    for m in mounts:
+        if not frm.startswith(m['Destination']):
+            continue
+
+        # TODO: do not know what happens with non-local drivers
+        # need to add condition?  mnt.Driver == "local"
+        # TODO: check that it's hex
+        if len(m['Name']) == 64:
+            return '{}:{}'.format(m['Name'], m['Destination'])
+
+        # -v /host/file:/new/file
+        # -v /new/file:/other/dest
+        # ==> -v /host/file:/other/dest
+        if len(m['Name']) == 0:
+            return '{}:{}'.format(m['Source'], to)
+
+    # No matching... Probably won't work?
+    return '{}:{}'.format(frm, to)
+
+
+@click.command()
+@click.argument('frm')
+@click.argument('to')
+def main(frm, to):
+    print(getPath(frm, to))
+
+
+if __name__ == '__main__':
+    main()
+
