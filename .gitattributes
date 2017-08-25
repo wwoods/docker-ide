@@ -1,0 +1,4 @@
+# If cloning to windows box, don't want dot files changing line endings
+/ide-base/* text eol=lf
+/ide-base/dot-files/* text eol=lf
+
