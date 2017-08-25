@@ -139,7 +139,7 @@ Plugin 'tpope/vim-fugitive'
 Plugin 'junegunn/gv.vim'
 
 " Hack Gstatus command to bind d to Gvdiff only
-func! s:WWGstatus()
+func! s:WWgstatus()
     let l:vdiff = maparg('dv')
     let l:base = ""
     let l:base = l:base . ":nunmap <buffer> dv\<cr>"
@@ -147,15 +147,28 @@ func! s:WWGstatus()
     let l:base = l:base . ":nunmap <buffer> ds\<cr>"
     let l:base = l:base . ":nunmap <buffer> dh\<cr>"
     let l:base = l:base . ":nunmap <buffer> dd\<cr>"
-    let l:base = l:base . ":nnoremap <buffer> d " . l:vdiff . ":execute 'normal! ' . g:WWGvdiff()<cr>\<cr>"
-    ". s:WWGvdiff()
+    nnoremap <buffer> d :call <SID>WWgstatus_diffFile()<cr>
+    "let l:base = l:base . ":nnoremap <buffer> d " . l:vdiff . ":execute 'normal! ' . g:WWgdiff()<cr>\<cr>"
+    ". s:WWgdiff()
     "echo(substitute(l:base, "\<cr>", ' CR ', 'g'))
     return l:base
 endfunc
-func! g:WWGvdiff()
-    return s:WWGvdiff()
+func! s:WWgstatus_diffFile()
+    let l:fugitive_scr = s:GetScriptNumber('fugitive.vim')
+    execute 'let [filename, status] = <SNR>' . l:fugitive_scr . '_stage_info(line("."))'
+    if empty(l:filename)
+        return
+    endif
+    let l:staged = v:false
+    if l:status == 'staged'
+        let l:staged = v:true
+    endif
+    call s:WWgdiff_file(l:filename, 'HEAD', '', l:staged, v:false)
 endfunc
-func! s:WWGvdiff()
+func! g:WWgdiff()
+    return s:WWgdiff()
+endfunc
+func! s:WWgdiff()
     " Executed after Gvdiff; current selection is main window, but without
     " other operations, it will change once vim-fugitive is done on the next
     " tick.
@@ -180,23 +193,19 @@ nnoremap g? :echo "
             \gs - :Gstatus (has its own g? screen; '-' to add/reset staging;\n
             \        however, 'd' has been rebound to an improved Gvdiff, as below)\n
             \gb - :Gblame\n
-            \gd - :Gvdiff (improved)\n
-            \gl - git log help\n
-            \gll - :GV (git graph)\n
-            \glf - :GV . (git graph of current file)\n
+            \gd - git diff working tree against HEAD.\n
+            \gl - git log help.\n
+            \gla - git log all.\n
+            \glf - git log current file.\n
             \"<cr>
 nnoremap <silent> gb :Gblame<cr>
-nnoremap <silent> gd :Gvdiff<cr>:call <SID>WWGvdiff()<cr>
-nnoremap <silent> gl :echo "
-            \git log bindings:\n
-            \gll - git graph of whole repository.\n
-            \glf - git graph of current file.\n
-            \"<cr>
-nnoremap <silent> gll :GV<cr>
-nnoremap <silent> glf :GV!<cr>
-nnoremap <silent> gs :Gstatus<cr>:execute "normal! " . <SID>WWGstatus()<cr>
+nnoremap <silent> gd :call <SID>WWgdiff_file('', 'HEAD', '', v:false, v:false)<cr>
+nnoremap <silent> gl g?
+nnoremap <silent> gla :call <SID>WWglog('--all')<cr>
+nnoremap <silent> glf :call <SID>WWglog('')<cr>
+nnoremap <silent> gs :Gstatus<cr>:execute "normal! " . <SID>WWgstatus()<cr>
 
-func! s:WWvlog(all)
+func! s:WWglog(all)
     " Function for displaying and navigating the git log
     if empty(a:all)
         let l:file = expand('%:p')
@@ -222,18 +231,18 @@ func! s:WWvlog(all)
     silent! execute 'file ' . escape('//git/log' . (empty(l:file) ? '' : ' ' . l:fileshort), ' ')
 
     " Syntax setup
-    setf wwvlog
+    setf wwglog
     syn clear
-    syn match wwvlogBranches /\v[\/\\| \t]*(\*[\/\\| \t]*|\s*$)/ nextgroup=wwvlogSha
-    syn match wwvlogSha /\v[0-9a-f]+/ contained nextgroup=wwvlogHyphen
-    syn match wwvlogHyphen / - / contained nextgroup=wwvlogDate
-    syn match wwvlogDate /\v\([^)]+\)/ contained
-    syn match wwvlogTags /\v\([^)]+\)$/
+    syn match wwglogBranches /\v[\/\\| \t]*(\*[\/\\| \t]*|\s*$)/ nextgroup=wwglogSha
+    syn match wwglogSha /\v[0-9a-f]+/ contained nextgroup=wwglogHyphen
+    syn match wwglogHyphen / - / contained nextgroup=wwglogDate
+    syn match wwglogDate /\v\([^)]+\)/ contained
+    syn match wwglogTags /\v\([^)]+\)$/
 
-    hi def link wwvlogBranches Number
-    hi def link wwvlogSha Identifier
-    hi def link wwvlogDate Type
-    hi def link wwvlogTags Statement
+    hi def link wwglogBranches Number
+    hi def link wwglogSha Identifier
+    hi def link wwglogDate Type
+    hi def link wwglogTags Statement
 
     " Bind the keys for viewing the log
     nnoremap <silent> <buffer> ? :echo "
@@ -247,17 +256,18 @@ func! s:WWvlog(all)
             \q - Quit\n
             \"<cr>
     nnoremap <silent> <buffer> q :q!<cr>
-    nnoremap <silent> <buffer> <cr> :call <SID>WWvlog_viewCommit('', b:file)<cr>
-    nnoremap <silent> <buffer> <space> :call <SID>WWvlog_viewCommit('', b:file)<cr>
+    nnoremap <silent> <buffer> <cr> :call <SID>WWglog_viewCommit('', b:file)<cr>
+    nnoremap <silent> <buffer> <space> :call <SID>WWglog_viewCommit('', b:file)<cr>
     let b:file = l:file
-    nnoremap <silent> <buffer> d :call <SID>WWvlog_viewCommit('diff', b:file)<cr>
-    nnoremap <silent> <buffer> r :call <SID>WWvlog_rebaseCommit()<cr>
+    nnoremap <silent> <buffer> d :call <SID>WWglog_viewCommit('diff', b:file)<cr>
+    nnoremap <silent> <buffer> r :call <SID>WWglog_rebaseCommit()<cr>
     nnoremap <silent> <buffer> <left> 80h
     nnoremap <silent> <buffer> h 80h
     nnoremap <silent> <buffer> <right> 80l
     nnoremap <silent> <buffer> l 80l
 endfunc
-func! s:WWvlog_getCommit()
+func! s:WWglog_getCommit()
+    " Gets commit hash for current log line
     let l:line = getline('.')
     let l:commit = matchlist(l:line, '\v[|\\/ \t]*\*[|\\/ \t]*(\[[0-9;]*m)?([0-9a-f]+)')
     if empty(l:commit)
@@ -266,64 +276,156 @@ func! s:WWvlog_getCommit()
     let l:commit = l:commit[2]
     return l:commit
 endfunc
-func! s:WWvlog_refresh()
+func! s:WWglog_refresh()
     " Refreshes the graph view
     let l:all = b:logAll
     normal q
-    call s:WWvlog(l:all)
+    call s:WWglog(l:all)
 endfunc
-func! s:WWvlog_rebaseCommit()
-    let l:commit = s:WWvlog_getCommit()
+func! s:WWglog_rebaseCommit()
+    let l:commit = s:WWglog_getCommit()
     if empty(l:commit)
         return
     endif
     silent! execute '!git rebase -i ' . l:commit
-    call s:WWvlog_refresh()
+    call s:WWglog_refresh()
 endfunc
-func! s:WWvlog_diffFile_quit()
-    let l:pastwin = b:WWvlog_winPast
-    let l:mainwin = b:WWvlog_winMain
-    let l:nextwin = b:WWvlog_winNext
+func! s:WWgdiff_quit(forced)
+    " Called when a new buffer is entered or q is pressed
+    let l:pastwin = g:WWgdiff_winPast
+    let l:mainwin = g:WWgdiff_winMain
+    let l:nextwin = g:WWgdiff_winNext
+    let l:curwin = win_getid()
 
-    call win_gotoid(l:mainwin)
-    if &modified
-        " OK to quit... it's going to quit anyway.
-        "echom "Cannot quit; unsaved changes!"
-        "return
+    if winbufnr(l:mainwin) != -1
+        call win_gotoid(l:mainwin)
+        if &modified
+            if a:forced
+                " We are going to quit anyway, nothing can be done
+            else
+                echom "Cannot quit; unsaved changes!"
+                call win_gotoid(l:mainwin)
+                return
+            endif
+        endif
     endif
 
-    augroup WWvlog_diffFile_quit
-        autocmd! * <buffer>
+    " Definitly going to close diff, proceed
+    augroup WWgdiff_quit
+        autocmd!
     augroup END
 
-    call win_gotoid(l:pastwin)
-    silent! execute 'q'
-    call win_gotoid(l:nextwin)
-    silent! execute 'q'
-    call win_gotoid(l:mainwin)
-    silent! execute 'q'
-endfunc
-func! s:WWvlog_diffFile(commit, file, toWorkingTree)
-    let l:style = 'keepalt vert '
-    if a:toWorkingTree
-        " Open the working version
-        silent! execute 'split ' . a:file
+    let winsToClose = [l:pastwin, l:nextwin]
+    if g:WWgdiff_winCloseMain
+        call add(winsToClose, l:mainwin)
     else
-        " Open the version from 
+        call win_gotoid(l:mainwin)
+        " Unmap keys
+        nunmap <buffer> q
+        nunmap <buffer> g?
+        nunmap <buffer> g<
+        nunmap <buffer> g>
+    endif
+    for win in winsToClose
+        if winbufnr(win) == -1
+            continue
+        endif
+
+        call win_gotoid(win)
+        silent! execute 'q'
+    endfor
+
+    unlet g:WWgdiff_winMain
+    unlet g:WWgdiff_winPast
+    unlet g:WWgdiff_winNext
+endfunc
+func! s:WWgdiff_quitMaybe()
+    " Called when window changed
+    let l:pastwin = g:WWgdiff_winPast
+    let l:mainwin = g:WWgdiff_winMain
+    let l:nextwin = g:WWgdiff_winNext
+    let l:curwin = win_getid()
+
+    let l:exited = winbufnr(l:mainwin) == -1
+                \ || winbufnr(l:pastwin) == -1
+                \ || winbufnr(l:nextwin) == -1
+
+    if l:curwin != l:pastwin
+                \ && l:curwin != l:mainwin
+                \ && l:curwin != l:nextwin
+                \ || l:exited
+
+        " Make sure the main window still exists; otherwise it's forced
+        call s:WWgdiff_quit(l:exited)
+    endif
+endfunc
+func! s:WWgdiff_file(file, commitLeft, commitRight, staged, notThreeWay)
+    " Parameters:
+    " file - File to open, or empty for current window.
+    " commitLeft - Left-side commit.
+    " commitRight - Right-side commit, or empty for duplicate of file view.
+    " staged - v:true if --cached should be specified.
+    if exists('g:WWgdiff_winMain')
+        " Close another diff
+        call s:WWgdiff_quit(v:true)
     endif
 
-    diffthis
-    let l:filetype = &filetype
+    let l:file = a:file
+    if !empty(l:file)
+        " Open out working version as a split
+        let l:file = fnamemodify(a:file, ':p:.')
+        if a:notThreeWay
+            new
+            silent! execute 'file ' . escape(l:file, ' ')
+            filetype detect
+        else
+            silent! execute 'split ' . a:file
+        endif
+        let g:WWgdiff_winCloseMain = v:true
+    else
+        "File already open
+        let l:file = expand('%:p:.')
+        let g:WWgdiff_winCloseMain = v:false
+    endif
 
+    let l:filetype = &filetype
     let l:splitter = &splitright
     let l:mainwin = win_getid()
 
+    if !a:notThreeWay
+        " New pane for next version, turn diffing on in main pane
+        diffthis
+
+        set splitright
+        vertical new
+    else
+        " Use main pane for next version
+    endif
+    " Diff against the current version, frozen
+    setlocal buftype=nofile bufhidden=wipe noswapfile
+    execute 'setlocal filetype=' . l:filetype
+    let l:nextwin = win_getid()
+    if empty(a:commitRight)
+        call win_gotoid(l:mainwin)
+        execute '%y'
+        call win_gotoid(l:nextwin)
+        normal! p
+    else
+        let l:cmd = 'git show ' . a:commitRight . ':' . l:file
+        silent! execute 'read !' . escape(l:cmd, '%')
+    endif
+    execute '0'
+    normal! dd
+    setlocal nomodifiable
+    diffthis
+
     " Diff against the version before the commit
+    call win_gotoid(l:mainwin)
     set nosplitright
     vertical new
     setlocal buftype=nofile bufhidden=wipe noswapfile
     execute 'setlocal filetype=' . l:filetype
-    let l:cmd = 'git show ' . a:commit . ':' . fnamemodify(a:file, ':p:.')
+    let l:cmd = 'git show ' . a:commitLeft . ':' . l:file
     silent! execute 'read !' . escape(l:cmd, '%')
     execute '0'
     normal! dd
@@ -331,48 +433,60 @@ func! s:WWvlog_diffFile(commit, file, toWorkingTree)
     diffthis
     let l:pastwin = win_getid()
 
-    " Diff against the current version, frozen
-    silent! execute l:mainwin . ' wincmd p'
-    set splitright
-    vertical new
-    setlocal buftype=nofile bufhidden=wipe noswapfile
-    execute 'setlocal filetype=' . l:filetype
-    let l:nextwin = win_getid()
-    silent! execute l:mainwin . ' wincmd p'
-    execute '%y'
-    silent! execute l:nextwin . ' wincmd p'
-    normal! p
-    execute '0'
-    normal! dd
-    setlocal nomodifiable
-    diffthis
-
     let &splitright = l:splitter
 
     " Store window ID, go back to main file
-    silent! execute l:mainwin . ' wincmd p'
-    let b:WWvlog_winPast = l:pastwin
-    let b:WWvlog_winMain = l:mainwin
-    let b:WWvlog_winNext = l:nextwin
+    call win_gotoid(l:mainwin)
+    let g:WWgdiff_winPast = l:pastwin
+    let g:WWgdiff_winMain = l:mainwin
+    let g:WWgdiff_winNext = l:nextwin
 
+    " Main buffer key presses
+    nnoremap <silent> <buffer> q :call <SID>WWgdiff_quit(v:false)<cr>
+    if a:notThreeWay
+        nnoremap <silent> <buffer> g? :echo "
+                \g? - This help.\n
+                \q - Quit diff.\n
+                \"<cr>
+    else
+        nnoremap <silent> <buffer> g? :echo "
+                \g? - This help.\n
+                \g< - Take left block.\n
+                \g> - Take right block.\n
+                \q - Quit diff.\n
+                \"<cr>
+        nnoremap <silent> <buffer> g< :execute 'diffget ' . winbufnr(g:WWgdiff_winPast)<cr>:diffupdate<cr>
+        nnoremap <silent> <buffer> g> :execute 'diffget ' . winbufnr(g:WWgdiff_winNext)<cr>:diffupdate<cr>
+    endif
+
+    " Side buffer key presses
+    call win_gotoid(l:pastwin)
+    nnoremap <silent> <buffer> q :call <SID>WWgdiff_quit(v:false)<cr>
+    call win_gotoid(l:nextwin)
+    nnoremap <silent> <buffer> q :call <SID>WWgdiff_quit(v:false)<cr>
+
+    " Return to main buffer
+    call win_gotoid(l:mainwin)
     " Whenever the main buffer exits, quit them all.
-    augroup WWvlog_diffFile_quit
-        autocmd! * <buffer>
-        autocmd WinLeave <buffer> call <SID>WWvlog_diffFile_quit()
+    augroup WWgdiff_quit
+        autocmd!
+        autocmd WinEnter * call s:WWgdiff_quitMaybe()
+        autocmd BufWritePost,FileWritePost <buffer> diffupdate
     augroup END
-    nnoremap <silent> <buffer> q :q<cr>
-    nnoremap <silent> <buffer> < :execute 'diffget ' . winbufnr(b:WWvlog_winPast)<cr>:diffupdate<cr>
-    nnoremap <silent> <buffer> > :execute 'diffget ' . winbufnr(b:WWvlog_winNext)<cr>:diffupdate<cr>
+
 endfunc
-func! s:WWvlog_viewCommit(mode, file)
+func! s:WWglog_viewCommit(mode, file)
     " Function for viewing a given commit diff
-    let l:commit = s:WWvlog_getCommit()
+    " Parameters:
+    " mode - '' or 'diff'.  'diff' means against working tree.
+    " file - '' or file path.  '' means all files.
+    let l:commit = s:WWglog_getCommit()
     if empty(l:commit)
         return
     endif
 
     if !empty(a:mode) && !empty(a:file)
-        call s:WWvlog_diffFile(l:commit, a:file, v:true)
+        call s:WWgdiff_file(a:file, l:commit, '', v:false, v:false)
         return
     endif
 
@@ -399,11 +513,11 @@ func! s:WWvlog_viewCommit(mode, file)
     " Syntax setup
     setf diff
     "syn clear
-    "syn match wwvlogDiffAdded /\v^\+.*/
-    "syn match wwvlogDiffRemoved /\v^-.*/
+    "syn match wwglogDiffAdded /\v^\+.*/
+    "syn match wwglogDiffRemoved /\v^-.*/
 
-    "hi def link wwvlogDiffAdded Identifier
-    "hi def link wwvlogDiffRemoved Special
+    "hi def link wwglogDiffAdded Identifier
+    "hi def link wwglogDiffRemoved Special
 
     " Fold configuration
     setlocal foldmethod=marker foldmarker={{{{{{,}}}}}}
@@ -412,17 +526,35 @@ func! s:WWvlog_viewCommit(mode, file)
     nnoremap <silent> <buffer> ? :echo "
             \? - This help\n
             \Enter or space - Expand / collapse diff segment\n
+            \d - Diff a closed fold\n
             \q - Close the log view\n
             \"<cr>
-    nnoremap <silent> <buffer> q :q!<cr>
     nnoremap <silent> <buffer> <cr> za
     nnoremap <silent> <buffer> <space> za
+    execute 'nnoremap <silent> <buffer> d :call <SID>WWglog_viewCommit_diffFold("' . l:commit . '", "' . a:mode . '")<cr>'
+    nnoremap <silent> <buffer> q :q!<cr>
 
     " Cleanup
     setlocal nomodifiable nowrap
 endfunc
-nnoremap <silent> gll :call <SID>WWvlog('--all')<cr>
-nnoremap <silent> glf :call <SID>WWvlog('')<cr>
+func! s:WWglog_viewCommit_diffFold(commit, mode)
+    let line = getline('.')
+    let m = matchlist(line, '\vdiff --git a/(.*[^\\]) b/')
+    if empty(m)
+        return
+    endif
+
+    let fname = m[1]
+    if empty(a:mode)
+        " Commit only
+        call s:WWgdiff_file(fname, a:commit . '~1', a:commit, v:false, v:true)
+    else
+        " Diff from working tree
+        call s:WWgdiff_file(fname, a:commit, '', v:false, v:false)
+    endif
+endfunc
+
+
 
 """" Autocomplete for python and others (IMPORTANT: To use,
 " cd ~/.vim/bundle/YouCompleteMe and run ./install.sh)
