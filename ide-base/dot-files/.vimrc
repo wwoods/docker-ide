@@ -38,6 +38,10 @@
 
 " TODO: Make plugin, use/recommend universal-ctags
 
+if v:version < 705
+    echom "Some features broken with vim version < 7.5"
+endif
+
 """""""" Utility functions; next section is Plugin Management """"""""
 func! s:GetScriptNumber(script_name)
     " https://stackoverflow.com/a/24027507/160205
@@ -388,6 +392,8 @@ func! s:WWgdiff_file(file, commitLeft, commitRight, staged, notThreeWay)
         let g:WWgdiff_winCloseMain = v:false
     endif
 
+    let l:filerel = l:file =~ '\v^\./|^\.\./' ? l:file : './' . l:file
+
     let l:filetype = &filetype
     let l:splitter = &splitright
     let l:mainwin = win_getid()
@@ -411,7 +417,7 @@ func! s:WWgdiff_file(file, commitLeft, commitRight, staged, notThreeWay)
         call win_gotoid(l:nextwin)
         normal! p
     else
-        let l:cmd = 'git show ' . a:commitRight . ':' . l:file
+        let l:cmd = 'git show ' . a:commitRight . ':' . l:filerel
         silent! execute 'read !' . escape(l:cmd, '%')
     endif
     execute '0'
@@ -425,7 +431,7 @@ func! s:WWgdiff_file(file, commitLeft, commitRight, staged, notThreeWay)
     vertical new
     setlocal buftype=nofile bufhidden=wipe noswapfile
     execute 'setlocal filetype=' . l:filetype
-    let l:cmd = 'git show ' . a:commitLeft . ':' . l:file
+    let l:cmd = 'git show ' . a:commitLeft . ':' . l:filerel
     silent! execute 'read !' . escape(l:cmd, '%')
     execute '0'
     normal! dd
@@ -545,6 +551,10 @@ func! s:WWglog_viewCommit_diffFold(commit, mode)
     endif
 
     let fname = m[1]
+    " Convert fname from git root to local, make sure current directory is 
+    " prefixed to relative path.
+    let gitdir = fnamemodify(fugitive#extract_git_dir('.'), ':h')
+    let fname = gitdir . '/' . fname
     if empty(a:mode)
         " Commit only
         call s:WWgdiff_file(fname, a:commit . '~1', a:commit, v:false, v:true)
