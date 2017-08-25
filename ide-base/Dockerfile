@@ -7,9 +7,12 @@ ENV LC_ALL=C.UTF-8
 
 # Set up machine, install packages
 RUN apt-get update \
+        # A systemd upgrade is currently broken in docker, similar to this, except workaround doesn't work: https://github.com/moby/moby/issues/1297
+        && apt-mark hold systemd \
         && apt-get upgrade -y \
         && apt-get update \
-        && apt-get install -y curl htop man vim p7zip zip unzip ssh git git-svn \
+        # Only install ssh client for same reason as above
+        && apt-get install -y curl htop man vim p7zip zip unzip openssh-client git git-svn \
         && apt-get install -y --no-install-recommends \
             autoconf automake pkg-config gcc g++ tmux
 
