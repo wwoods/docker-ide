@@ -572,7 +572,7 @@ endfunc
 " Python code folding
 "Plugin 'tmhedberg/SimpylFold'
 " Remove extraneous whitespace when edit mode is exited
-"Plugin 'thirtythreeforty/lessspace.vim'
+Plugin 'thirtythreeforty/lessspace.vim'
 Plugin 'ajh17/VimCompletesMe'
 set completeopt+=menuone
 autocmd FileType * 
