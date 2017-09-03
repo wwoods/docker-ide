@@ -5,9 +5,27 @@ services:
         build: ./ide-base
         image: ide-base
         command: /bin/bash
-    ide-ui:
-        build: ./ide-ui
-        image: ide-ui
+    ide-ui-base:
+        build: ./ide-ui-base
+        image: ide-ui-base
+        command: /bin/bash
+    ide-ui-gnome:
+        build: ./ide-ui-gnome
+        image: ide-ui-gnome
+
+        devices:
+            - /dev/snd
+        environment:
+            - DISPLAY
+        cap_add:
+            - sys_admin
+        volumes:
+            # Shared display
+            - /tmp/.X11-unix:/tmp/.X11-unix:rw
+            - /usr/lib/x86_64-linux-gnu/libXv.so.1:/usr/lib/x86_64-linux-gnu/libXv.so.1
+    ide-ui-xfce4:
+        build: ./ide-ui-xfce4
+        image: ide-ui-xfce4
         command: xfce4-session
 
         devices:

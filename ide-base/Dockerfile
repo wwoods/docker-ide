@@ -1,6 +1,6 @@
 # MUST be run with nvidia-docker
 # AND needs xhost +local:root to be run beforehand.
-FROM ubuntu:17.10
+FROM ubuntu:17.04
 
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
