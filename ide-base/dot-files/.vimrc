@@ -866,6 +866,10 @@ set number showmatch
 let python_highlight_all = 1
 
 
+""""""" ReStructuredText stuff """""""
+autocmd FileType rst setlocal shiftwidth=2 tabstop=2 softtabstop=2
+
+
 """"""" Typescript stuff """""""
 autocmd FileType css,html,json,scss,typescript,javascript setlocal shiftwidth=2 tabstop=2 softtabstop=2
 
