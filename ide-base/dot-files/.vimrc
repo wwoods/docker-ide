@@ -140,7 +140,8 @@ let g:ctrlp_user_command = ['tags', 'grep -P "F(\$|\t)" %s/tags | cut -f2 | sort
 
 """" git integration (see g?)
 Plugin 'tpope/vim-fugitive'
-Plugin 'junegunn/gv.vim'
+"Plugin 'junegunn/gv.vim'  Retired in favor of custom plugin... need to clean
+"everything up though.
 
 " Hack Gstatus command to bind d to Gvdiff only
 func! s:WWgstatus()
