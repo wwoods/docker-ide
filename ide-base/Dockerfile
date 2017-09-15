@@ -4,6 +4,7 @@ FROM ubuntu:17.04
 
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
+ENV TERM=xterm-256color
 
 # Set up machine, install packages
 RUN apt-get update \
