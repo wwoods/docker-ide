@@ -888,6 +888,11 @@ set incsearch
 set splitbelow
 
 
+""""""" Basic VIM settings """""""
+set nobackup
+set noswapfile
+
+
 """"""" Keybindings """""""
 " Set up leaders
 let mapleader=","
