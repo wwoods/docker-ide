@@ -30,8 +30,13 @@ WORKDIR /home/${DESK_USER}
 
 # Set up dot files
 COPY ./dot-files ./dot-files/
-RUN ${DESK_USER_CHOWN} ./dot-files && mv ./dot-files/.[^.]* ./ && rm -rf ./dot-files
-RUN echo "alias tmux='tmux -2'" >> ~/.bashrc
+RUN ${DESK_USER_CHOWN} ./dot-files \
+        # Special, our .bashrc only extends the default, does not replace it
+        && cat ./dot-files/.bashrc >> ~/.bashrc \
+        && rm ./dot-files/.bashrc \
+        # Other dot-files replace
+        && mv ./dot-files/.[^.]* ./ \
+        && rm -rf ./dot-files
 
 # Install VIM plugins
 # TODO - .ctags.vimrc should be optional.
