@@ -35,7 +35,7 @@ RUN ${DESK_USER_CHOWN} ./dot-files \
         && cat ./dot-files/.bashrc >> ~/.bashrc \
         && rm ./dot-files/.bashrc \
         # Other dot-files replace
-        && mv ./dot-files/.[^.]* ./ \
+        && mv ./dot-files/.[^.]* ./dot-files/* ./ \
         && rm -rf ./dot-files
 
 # Install VIM plugins
@@ -63,7 +63,7 @@ ADD ./dmnt /usr/bin/dmnt
 # Install ctags with fixed multiline parser
 RUN git clone https://github.com/masatake/ctags.git \
         && cd ctags \
-        && git checkout revise-multiline-regex-parser \
+        #&& git checkout revise-multiline-regex-parser \
         && ./autogen.sh \
         && ./configure \
         && make \
