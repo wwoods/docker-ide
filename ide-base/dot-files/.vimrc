@@ -884,6 +884,7 @@ autocmd FileType css,html,json,scss,typescript,javascript,pug,vue setlocal shift
 
 """"""" Latex stuff """""""
 autocmd FileType tex setlocal shiftwidth=2 tabstop=2 softtabstop=2
+autocmd FileType tex setlocal spell
 " LaTeX-Box indentation does not work well in practice
 let g:LatexBox_custom_indent=0
 
