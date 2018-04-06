@@ -29,7 +29,7 @@
 " integration for tab-completion also allows identifiers to be part of the tag
 " (e.g., ".. <<sec:sub>>Subsubsection").
 "
-" Additionally, note that this file has been configured for heavy ctags 
+" Additionally, note that this file has been configured for heavy ctags
 " integration; for instance, ctrl+p, if it finds a "tags" file, will use ctags
 " to generate the list of files to search.  This was chosen instead of git
 " deliberately, as it works with SVN as well, and can include auto-generated
@@ -77,7 +77,7 @@ func! s:PreviewNavigate(fpath, lineno, linepattern)
     let l:bufcur = win_getid()
     wincmd p
     let l:bufprev = win_getid()
-    
+
 	silent execute g:tagbar_previewwin_pos . ' pedit ' . fnameescape(a:fpath)
 
     let pid = 0
@@ -552,7 +552,7 @@ func! s:WWglog_viewCommit_diffFold(commit, mode)
     endif
 
     let fname = m[1]
-    " Convert fname from git root to local, make sure current directory is 
+    " Convert fname from git root to local, make sure current directory is
     " prefixed to relative path.
     let gitdir = fnamemodify(fugitive#extract_git_dir('.'), ':h')
     let fname = gitdir . '/' . fname
@@ -576,7 +576,7 @@ endfunc
 Plugin 'thirtythreeforty/lessspace.vim'
 Plugin 'ajh17/VimCompletesMe'
 set completeopt+=menuone
-autocmd FileType * 
+autocmd FileType *
             \ if &omnifunc == "" |
             \     let b:vcm_tab_complete='user' |
             \     setlocal completefunc=g:WWComplete_local |
@@ -593,7 +593,7 @@ func! g:WWComplete_local(findstart, base)
             return l:sc_col
         catch
             " Use word before cursor
-            let l:searchpat = exists('b:WWComplete_pattern') 
+            let l:searchpat = exists('b:WWComplete_pattern')
                     \ ? b:WWComplete_pattern
                     \ : '\k*'
             let l:searchpat = l:searchpat . '\V\%#'
@@ -709,7 +709,7 @@ func! s:WWTagbarToggle()
     let l:tag = s:WinByBufname('Tagbar')
 
     if l:tag && l:cur != l:tag
-        " Go to Tagbar after saving current 
+        " Go to Tagbar after saving current
         if &modified
             write
         endif
@@ -725,7 +725,11 @@ func! s:WWTagbarToggle()
     if &modified
         write
     endif
-    execute 'TagbarOpen'
+    TagbarOpen
+    if !s:WinByBufname('Tagbar')
+        " Failed to open tagbar!
+        return
+    endif
     if !exists('b:WWTagbar_initialized')
         let b:WWTagbar_initialized=1
 
@@ -814,7 +818,7 @@ func! s:WWTagbarToggle()
     execute l:cur . ' wincmd w'
 endfunc
 nnoremap <silent> t :call <SID>WWTagbarToggle()<cr>
-" Tagbar, while great, needs g:tagbar_type_<lang> defined on occasion... 
+" Tagbar, while great, needs g:tagbar_type_<lang> defined on occasion...
 source ~/.ctags.vimrc
 
 """" Screen splitter.  Use tmux instead!
@@ -879,6 +883,7 @@ autocmd FileType css,html,json,scss,typescript,javascript,pug,vue setlocal shift
 
 
 """"""" Latex stuff """""""
+autocmd FileType tex setlocal shiftwidth=2 tabstop=2 softtabstop=2
 " LaTeX-Box indentation does not work well in practice
 let g:LatexBox_custom_indent=0
 
