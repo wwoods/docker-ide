@@ -205,7 +205,7 @@ nnoremap g? :echo "
             \"<cr>
 nnoremap <silent> gb :Gblame<cr>
 nnoremap <silent> gd :call <SID>WWgdiff_file('', 'HEAD', '', v:false, v:false)<cr>
-nnoremap <silent> gl g?
+nmap <silent> gl g?
 nnoremap <silent> gla :call <SID>WWglog('--all')<cr>
 nnoremap <silent> glf :call <SID>WWglog('')<cr>
 nnoremap <silent> gs :Gstatus<cr>:execute "normal! " . <SID>WWgstatus()<cr>
@@ -251,15 +251,16 @@ func! s:WWglog(all)
 
     " Bind the keys for viewing the log
     nnoremap <silent> <buffer> ? :echo "
-            \git graph bindings:\n
+            \git graph bindings (no 'g' prefix needed):\n
             \? - This help\n
             \d - Diff working tree against given commit\n
-            \r - Rebase off the selected commit\n
+            \r - Rebase HEAD off the selected commit\n
             \Left arrow or h - Skip left 80 chars\n
             \Right arrow or l - Skip right 80 chars\n
             \Return - View commit\n
             \q - Quit\n
             \"<cr>
+    nmap <silent> <buffer> g? ?
     nnoremap <silent> <buffer> q :q!<cr>
     nnoremap <silent> <buffer> <cr> :call <SID>WWglog_viewCommit('', b:file)<cr>
     nnoremap <silent> <buffer> <space> :call <SID>WWglog_viewCommit('', b:file)<cr>
