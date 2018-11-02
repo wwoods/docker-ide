@@ -15,15 +15,21 @@ RUN \
         # Theme it \
         arc-theme moka-icon-theme \
         # Other applications \
-        chromium-browser nautilus rabbitvcs-nautilus gtk2-engines pm-utils
+        chromium-browser firefox nautilus rabbitvcs-nautilus gtk2-engines pm-utils
+
+# Patch for firefox from https://github.com/jessfraz/dockerfiles/blob/master/firefox/Dockerfile
+# and https://support.mozilla.org/en-US/questions/1167673
+RUN sudo bash -c 'echo '"'"'pref("browser.tabs.remote.autostart", false); pref("browser.tabs.remote.autostart.2", false);'"'"' >> /etc/firefox/syspref.js'
+# Fix fonts as per https://github.com/jessfraz/dockerfiles/blob/master/firefox/Dockerfile
+COPY ./fonts-local.conf /etc/fonts/local.conf
 
 # Themes!
-RUN mkdir .icons
-RUN mkdir .themes
 # Capitaine cursors and Axiom theming
 COPY ./theme ./tmp-theme/
 RUN \
-        ${DESK_USER_CHOWN} tmp-theme \
+        mkdir .icons \
+        && mkdir .themes \
+        && ${DESK_USER_CHOWN} tmp-theme \
         && cd tmp-theme \
         && tar -xzvf capitaine-cursors-r2.1.tar.gz \
         && cp -pr capitaine-cursors/ ~/.icons/capitaine-cursors \

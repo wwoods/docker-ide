@@ -13,7 +13,7 @@ RUN apt-get update \
         && apt-get upgrade -y \
         && apt-get update \
         # Only install ssh client for same reason as above
-        && apt-get install -y curl htop man vim p7zip zip unzip openssh-client git git-svn \
+        && apt-get install -y curl htop man vim rsync p7zip zip unzip openssh-client git git-svn subversion \
         && apt-get install -y --no-install-recommends \
             autoconf automake pkg-config gcc g++ tmux
 

@@ -27,8 +27,8 @@ RUN sudo apt-get install -y --no-install-recommends xdg-utils \
         && mkdir -p ~/.config \
         && mkdir -p ~/.local/share/applications \
         && xdg-mime default nautilus.desktop inode/directory application \
-        && xdg-mime default chromium-browser.desktop text/html webbrowser \
-        && xdg-mime default chromium-browser.desktop x-scheme-handler/http\
-        && xdg-mime default chromium-browser.desktop x-scheme-handler/https \
-        && xdg-mime default chromium-browser.desktop x-scheme-handler/about
+        && xdg-mime default firefox.desktop text/html webbrowser \
+        && xdg-mime default firefox.desktop x-scheme-handler/http\
+        && xdg-mime default firefox.desktop x-scheme-handler/https \
+        && xdg-mime default firefox.desktop x-scheme-handler/about
 
