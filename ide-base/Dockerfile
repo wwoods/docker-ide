@@ -1,6 +1,6 @@
 # MUST be run with nvidia-docker
 # AND needs xhost +local:root to be run beforehand.
-FROM ubuntu:17.04
+FROM ubuntu:18.04
 
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
@@ -35,7 +35,8 @@ RUN ${DESK_USER_CHOWN} ./dot-files \
         && cat ./dot-files/.bashrc >> ~/.bashrc \
         && rm ./dot-files/.bashrc \
         # Other dot-files replace
-        && mv ./dot-files/.[^.]* ./dot-files/* ./ \
+        && mv ./dot-files/.[^.]* ./ \
+        && (mv ./dot-files/* ./ || echo 'Nothing to move') \
         && rm -rf ./dot-files
 
 # Install VIM plugins

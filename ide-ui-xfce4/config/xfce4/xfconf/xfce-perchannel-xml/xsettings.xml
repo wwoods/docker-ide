@@ -14,7 +14,7 @@
     <property name="EnableInputFeedbackSounds" type="empty"/>
   </property>
   <property name="Xft" type="empty">
-    <property name="DPI" type="empty"/>
+    <property name="DPI" type="int" value="140"/>
     <property name="Antialias" type="int" value="1"/>
     <property name="Hinting" type="empty"/>
     <property name="HintStyle" type="empty"/>
