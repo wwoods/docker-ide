@@ -168,7 +168,7 @@ func! s:WWgstatus_diffFile()
     if l:status == 'staged'
         let l:staged = v:true
     endif
-    call s:WWgdiff_file(l:filename, 'HEAD', '', l:staged, v:false)
+    call s:WWgdiff_file(l:filename, 'HEAD', '', l:staged, v:false, v:false, v:false)
 endfunc
 func! g:WWgdiff()
     return s:WWgdiff()
@@ -204,7 +204,7 @@ nnoremap g? :echo "
             \glf - git log current file.\n
             \"<cr>
 nnoremap <silent> gb :Gblame<cr>
-nnoremap <silent> gd :call <SID>WWgdiff_file('', 'HEAD', '', v:false, v:false)<cr>
+nnoremap <silent> gd :call <SID>WWgdiff_file('', 'HEAD', '', v:false, v:false, v:false)<cr>
 nmap <silent> gl g?
 nnoremap <silent> gla :call <SID>WWglog('--all')<cr>
 nnoremap <silent> glf :call <SID>WWglog('')<cr>
@@ -254,6 +254,7 @@ func! s:WWglog(all)
             \git graph bindings (no 'g' prefix needed):\n
             \? - This help\n
             \d - Diff working tree against given commit\n
+            \b - Diff working tree against given commit, ignoring whitespace (-b)\n
             \r - Rebase HEAD off the selected commit\n
             \Left arrow or h - Skip left 80 chars\n
             \Right arrow or l - Skip right 80 chars\n
@@ -266,6 +267,7 @@ func! s:WWglog(all)
     nnoremap <silent> <buffer> <space> :call <SID>WWglog_viewCommit('', b:file)<cr>
     let b:file = l:file
     nnoremap <silent> <buffer> d :call <SID>WWglog_viewCommit('diff', b:file)<cr>
+    nnoremap <silent> <buffer> b :call <SID>WWglog_viewCommit('diffb', b:file)<cr>
     nnoremap <silent> <buffer> r :call <SID>WWglog_rebaseCommit()<cr>
     nnoremap <silent> <buffer> <left> 80h
     nnoremap <silent> <buffer> h 80h
@@ -365,12 +367,13 @@ func! s:WWgdiff_quitMaybe()
         call s:WWgdiff_quit(l:exited)
     endif
 endfunc
-func! s:WWgdiff_file(file, commitLeft, commitRight, staged, notThreeWay)
+func! s:WWgdiff_file(file, commitLeft, commitRight, staged, notThreeWay, noWhitespace)
     " Parameters:
     " file - File to open, or empty for current window.
     " commitLeft - Left-side commit.
     " commitRight - Right-side commit, or empty for duplicate of file view.
     " staged - v:true if --cached should be specified.
+    " noWhitespace - v:true to diff with -b enabled.
     if exists('g:WWgdiff_winMain')
         " Close another diff
         call s:WWgdiff_quit(v:true)
@@ -412,6 +415,11 @@ func! s:WWgdiff_file(file, commitLeft, commitRight, staged, notThreeWay)
     " Diff against the current version, frozen
     setlocal buftype=nofile bufhidden=wipe noswapfile
     execute 'setlocal filetype=' . l:filetype
+    if a:noWhitespace
+        setlocal diffopt+=iwhite
+    else
+        setlocal diffopt-=iwhite
+    endif
     let l:nextwin = win_getid()
     if empty(a:commitRight)
         call win_gotoid(l:mainwin)
@@ -486,7 +494,9 @@ endfunc
 func! s:WWglog_viewCommit(mode, file)
     " Function for viewing a given commit diff
     " Parameters:
-    " mode - '' or 'diff'.  'diff' means against working tree.
+    " mode - '' or 'diff'.  'diff' means against working tree.  'diffb' for
+    "     diff against working tree but with -b enabled to hide whitespace
+    "     changes.
     " file - '' or file path.  '' means all files.
     let l:commit = s:WWglog_getCommit()
     if empty(l:commit)
@@ -494,7 +504,7 @@ func! s:WWglog_viewCommit(mode, file)
     endif
 
     if !empty(a:mode) && !empty(a:file)
-        call s:WWgdiff_file(a:file, l:commit, '', v:false, v:false)
+        call s:WWgdiff_file(a:file, l:commit, '', v:false, v:false, v:false)
         return
     endif
 
@@ -504,6 +514,9 @@ func! s:WWglog_viewCommit(mode, file)
     elseif a:mode == 'diff'
         let l:title = '//git/diff'
         let l:cmd = 'git diff --no-color ' . l:commit . ' -- ' . a:file
+    elseif a:mode == 'diffb'
+        let l:title = '//git/diff'
+        let l:cmd = 'git diff -b --no-color ' . l:commit . ' -- ' . a:file
     else
         echom "ERROR"
         return
@@ -559,10 +572,12 @@ func! s:WWglog_viewCommit_diffFold(commit, mode)
     let fname = gitdir . '/' . fname
     if empty(a:mode)
         " Commit only
-        call s:WWgdiff_file(fname, a:commit . '~1', a:commit, v:false, v:true)
+        call s:WWgdiff_file(fname, a:commit . '~1', a:commit, v:false, v:true, v:false)
+    elseif a:mode == 'diffb'
+        call s:WWgdiff_file(fname, a:commit, '', v:false, v:false, v:true)
     else
         " Diff from working tree
-        call s:WWgdiff_file(fname, a:commit, '', v:false, v:false)
+        call s:WWgdiff_file(fname, a:commit, '', v:false, v:false, v:false)
     endif
 endfunc
 
