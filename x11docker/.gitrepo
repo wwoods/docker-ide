@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/mviereck/x11docker.git
+	branch = master
+	commit = b71a8afcafe17a14226b527ebbc8530d908963d5
+	parent = 82ac086041925402f51c153c6001df711b3ba953
+	method = merge
+	cmdver = 0.4.0
