@@ -880,6 +880,10 @@ set shiftwidth=4 tabstop=4 softtabstop=4 expandtab autoindent
 " vim-conflicted version marker
 set statusline+=%{ConflictedVersion()}
 
+" Airline plugin can be quite slow with extensions, so turn those off.
+let g:airline_extensions=[]
+let g:airline_highlighting_cache=1
+
 
 """"""" Python stuff """""""
 syntax enable
@@ -979,8 +983,11 @@ inoremap ø <C-o>dw
 
 " Linux / windows ctrl+backspace ctrl+delete
 " Note that ctrl+backspace doesn't work in Linux :(
-imap <C-backspace> <C-w>
-imap <C-\> <C-w>
+" Note that <C-w> doesn't work here, as it would stop at insert boundary:
+" https://github.com/vim/vim/issues/964 .  Instead, rely on 'db', using <C-o>
+" to access it.
+imap <C-backspace> <C-\>
+inoremap <C-\> <C-\><C-o>db
 imap <C-delete> <C-o>dw
 " For terminals which emit <C-delete> as follows
 imap <C-[>[3;5~ <C-o>dw
