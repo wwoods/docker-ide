@@ -1,5 +1,7 @@
 # Example script that launches the ide-ui container
 
+set -e
+
 if [ "no" == "yes" ]; then
     # OLD, non-x11docker version
     export XEPH_DISPLAY=":10"
@@ -13,6 +15,7 @@ else
     GPU=no
     GPU_ARGS="--gpu --hostdisplay --xorg"
     [ "$GPU" != "yes" ] && GPU_ARGS=""
+    docker-compose rm -f && docker-compose build ide-ui-base
     docker-compose rm -f && docker-compose build ide-ui-xfce4 && x11docker/x11docker ${GPU_ARGS} --desktop -fy --no-init --user=RETAIN --sudouser -- --rm -- ide-ui-xfce4 startxfce4
 fi
 

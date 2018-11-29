@@ -1,6 +1,6 @@
 FROM ide-base
 
-RUN sudo apt-get update
+RUN sudo apt-get update && ls
 
 # Install VirtualGL (allows OpenGL applications over VNC... also a way to run this without VNC!)
 ENV VIRTUALGL_VERSION 2.5.2
