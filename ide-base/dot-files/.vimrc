@@ -841,8 +841,13 @@ source ~/.ctags.vimrc
 "Plugin 'ervandew/screen'
 
 """" LaTeX editing
-"Plugin 'LaTeX-Box-Team/LaTeX-Box'
+"LaTeX-Box works poorly in my experience.
 " ctags with a few custom rules is better
+"Plugin 'LaTeX-Box-Team/LaTeX-Box'
+
+"However, spelling doesn't work in macros with builtin tex syntax.  Therefore,
+"use the more modern "vimtex" as a compromise.
+Plugin 'lervag/vimtex'
 
 """" Status bar mods
 Plugin 'bling/vim-airline'
@@ -906,7 +911,7 @@ autocmd FileType css,html,json,scss,typescript,javascript,pug,vue setlocal shift
 autocmd FileType tex setlocal shiftwidth=2 tabstop=2 softtabstop=2
 autocmd FileType tex setlocal spell
 " LaTeX-Box indentation does not work well in practice
-let g:LatexBox_custom_indent=0
+let g:tex_flavor = 'latex'
 
 
 """"""" General appearance stuff """""""
