@@ -837,6 +837,9 @@ nnoremap <silent> t :call <SID>WWTagbarToggle()<cr>
 " Tagbar, while great, needs g:tagbar_type_<lang> defined on occasion...
 source ~/.ctags.vimrc
 
+"""" Let FocusGained and FocusLost work when inside of tmux.
+Plugin 'tmux-plugins/vim-tmux-focus-events'
+
 """" Screen splitter.  Use tmux instead!
 "Plugin 'ervandew/screen'
 
@@ -888,6 +891,12 @@ set statusline+=%{ConflictedVersion()}
 " Airline plugin can be quite slow with extensions, so turn those off.
 let g:airline_extensions=[]
 let g:airline_highlighting_cache=1
+
+" Allow reloading a file that's not changed in vim but has been changed
+" elsewhere.
+set autoread
+" Check if file changed on focus / buffer change.
+autocmd FocusGained,BufEnter * :silent! checktime
 
 
 """"""" Python stuff """""""
