@@ -1,4 +1,5 @@
 let g:tagbar_type_tex = {
+        \ 'ctagsargs': '-f - --format=3 --excmd=pattern --fields=nksSaf --extras= --file-scope=yes --sort=no --append=no',
         \ 'ctagstype': 'latex',
         \ 'kinds': [ 'p:parts', 'c:chapters', 's:sections', 'g:graphics:1:0', 'l:labels:1:0', 'r:refs:0:0' ],
         \ 'sort': 0,

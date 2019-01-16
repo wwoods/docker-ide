@@ -1,5 +1,6 @@
 --extras=+f
 --fields=+nSa
+--format=3
 --recurse=yes
 --tag-relative=yes
 
