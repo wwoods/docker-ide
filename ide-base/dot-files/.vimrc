@@ -850,6 +850,12 @@ Plugin 'tmux-plugins/vim-tmux-focus-events'
 
 "However, spelling doesn't work in macros with builtin tex syntax.  Therefore,
 "use the more modern "vimtex" as a compromise.
+
+" Disable vimtex key mappings.  Otherwise, pressing e.g. '`' will wait for
+" more input, which is annoying when quoting something.  Plus, all of the
+" imaps don't really add any value...
+let g:vimtex_mappings_enabled=0
+let g:vimtex_imaps_enabled=0
 Plugin 'lervag/vimtex'
 
 """" Status bar mods
