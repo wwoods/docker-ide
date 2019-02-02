@@ -904,6 +904,7 @@ set autoread
 " Check if file changed on focus / buffer change.
 autocmd FocusGained,BufEnter * :silent! checktime
 
+autocmd FileType gitcommit setlocal spell
 
 """"""" Python stuff """""""
 syntax enable
