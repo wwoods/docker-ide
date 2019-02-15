@@ -7,9 +7,6 @@ alias tmux='tmux -2'
 export EDITOR=vim
 
 # Fancy prompt with time measuring, etc.
-smiley () {
-  printf :\\"$(($??50:51))";
-}
 print_elapsed () {
   NOW=`date +%s%N`
   DIFF=$(expr $NOW - $PT_LAST_TIME)
@@ -54,6 +51,8 @@ export PT_LAST_TIME=`date +%s%N`
 export PT_CMD_LAST=0
 export PT_COLOR_NORM=""
 export PT_COLOR_FADE=""
+export PT_COLOR_GOOD=""
+export PT_COLOR_BAD=""
 
 if [ -t 1 ]; then
   # Terminal
@@ -61,9 +60,19 @@ if [ -t 1 ]; then
   if test -n "$ncolors" && test $ncolors -ge 8; then
     # With colors!
     export PT_COLOR_NORM=$(tput sgr0)
-    export PT_COLOR_FADE=$(tput setaf 3)
+    export PT_COLOR_FADE=$(tput setaf 11)
+    export PT_COLOR_GOOD=${PT_COLOR_NORM}
+    export PT_COLOR_BAD=$(tput setaf 9)
   fi
 fi
+# Colorized smiley
+smiley () {
+  if [ $? -eq 0 ]; then
+    printf "${PT_COLOR_GOOD}:)${PT_COLOR_NORM}"
+  else
+    printf "${PT_COLOR_BAD}:(${PT_COLOR_NORM}"
+  fi
+}
 # On exit, delete our command counter.  We need to use a command counter so
 # that echo 1 && echo 1 (and piped commands) work towards a single elapsed time,
 # not several.
