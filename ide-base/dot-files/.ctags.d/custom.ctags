@@ -1,3 +1,4 @@
+# Can test this file via: ctags -f - <file>
 --extras=+f
 --fields=+nSa
 --format=3
@@ -50,6 +51,8 @@
 --regex-latex=/\\label[[:space:]]*\{([^}]+)\}/\1/l,label/
 --regex-latex=/\\ref[[:space:]]*\{([^}]+)\}/\1/r,ref/
 --regex-latex=/\\pageref[[:space:]]*\{([^}]+)\}/\1/p,pageref/
+# easygraphics
+--regex-latex=/\\(fig|alg|wtab)\*?\[[^]]*label=([^],]+)/\2/l,label/
 
 --langdef=bibtex
 --langmap=bibtex:.bib
