@@ -6,6 +6,12 @@ alias tmux='tmux -2'
 # Use vim to edit git messages, etc
 export EDITOR=vim
 
+# Do not duplicate history entries; if the same command is run multiple times,
+# only show it once.
+# ignoreboth: Do not save lines starting with a space, do not save duplicates
+# erasedups: Active erase prior duplicates of current line
+export HISTCONTROL=ignoreboth:erasedups
+
 # Fancy prompt with time measuring, etc.
 print_elapsed () {
   NOW=`date +%s%N`
