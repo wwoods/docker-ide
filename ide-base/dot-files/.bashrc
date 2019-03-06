@@ -17,7 +17,58 @@ export HISTCONTROL=ignoreboth:erasedups
 
 # Allow "pdfcompress" command
 pdfcompress () {
-    gs -q -dNOPAUSE -dBATCH -dSAFER -sDEVICE=pdfwrite -dCompatibilityLevel=1.3 -dPDFSETTINGS=/screen -dEmbedAllFonts=true -dSubsetFonts=true -dColorImageDownsampleType=/Bicubic -dColorImageResolution=144 -dGrayImageDownsampleType=/Bicubic -dGrayImageResolution=144 -dMonoImageDownsampleType=/Bicubic -dMonoImageResolution=144 -sOutputFile=$1.compressed.pdf $1;
+    gs -q -dNOPAUSE -dBATCH -dSAFER -sDEVICE=pdfwrite -dCompatibilityLevel=1.5 -dPDFSETTINGS=/screen -dEmbedAllFonts=true -dSubsetFonts=true -dColorImageDownsampleType=/Bicubic -dColorImageResolution=144 -dGrayImageDownsampleType=/Bicubic -dGrayImageResolution=144 -dMonoImageDownsampleType=/Bicubic -dMonoImageResolution=144 -sOutputFile=${1::-4}.compressed.pdf $1;
+}
+pdfconcat () {
+    OUTPUT="$1"
+    shift
+    gs -o $OUTPUT -sDEVICE=pdfwrite \
+        -dAntiAliasColorImage=false                    \
+        -dAntiAliasGrayImage=false                     \
+        -dAntiAliasMonoImage=false                     \
+        -dAutoFilterColorImages=false                  \
+        -dAutoFilterGrayImages=false                   \
+        -dDownsampleColorImages=false                  \
+        -dDownsampleGrayImages=false                   \
+        -dDownsampleMonoImages=false                   \
+        -dColorConversionStrategy=/LeaveColorUnchanged \
+        -dConvertCMYKImagesToRGB=false                 \
+        -dConvertImagesToIndexed=false                 \
+        -dUCRandBGInfo=/Preserve                       \
+        -dPreserveHalftoneInfo=true                    \
+        -dPreserveOPIComments=true                     \
+        -dPreserveOverprintSettings=true               \
+        $@
+}
+pdfextract () {
+    # Extract pages from a PDF; usage:
+    # pdfextract {pdf} {first} {last} [{first} {last}...]
+    if [ "$#" -lt "3" ]; then
+        echo 'Need at least 3 args'
+        return 1
+    fi
+    PDF="$1"
+    PDF_OUT="${1::-4}.extracted.pdf"
+    PDF_MADE="no"
+    shift
+    while [ "$#" -ge "2" ]; do
+        if [ "$PDF_MADE" == "no" ]; then
+            echo 'Case 1'
+            pdfconcat "$PDF_OUT" -dFirstPage="$1" -dLastPage="$2" "$PDF"
+            PDF_MADE="yes"
+        else
+            echo 'Case 2'
+            mv "$PDF_OUT" "${PDF_OUT::-4}.1.pdf"
+            pdfconcat "${PDF_OUT::-4}.2.pdf" -dFirstPage="$1" -dLastPage="$2" "$PDF"
+            pdfconcat "$PDF_OUT" "${PDF_OUT::-4}.1.pdf" "${PDF_OUT::-4}.2.pdf"
+            rm "${PDF_OUT::-4}.1.pdf" "${PDF_OUT::-4}.2.pdf"
+        fi
+        shift
+        shift
+    done
+    if [ "$#" -gt "0" ]; then
+        echo 'Bad number of arguments.'
+    fi
 }
 
 # Fancy prompt with time measuring, etc.
