@@ -3,6 +3,9 @@
 # Assume color for tmux
 alias tmux='tmux -2'
 
+# Other aliases
+alias ls="ls --color=auto -v"  # Color, use natural sorting for numbers
+
 # Use vim to edit git messages, etc
 export EDITOR=vim
 
@@ -11,6 +14,11 @@ export EDITOR=vim
 # ignoreboth: Do not save lines starting with a space, do not save duplicates
 # erasedups: Active erase prior duplicates of current line
 export HISTCONTROL=ignoreboth:erasedups
+
+# Allow "pdfcompress" command
+pdfcompress () {
+    gs -q -dNOPAUSE -dBATCH -dSAFER -sDEVICE=pdfwrite -dCompatibilityLevel=1.3 -dPDFSETTINGS=/screen -dEmbedAllFonts=true -dSubsetFonts=true -dColorImageDownsampleType=/Bicubic -dColorImageResolution=144 -dGrayImageDownsampleType=/Bicubic -dGrayImageResolution=144 -dMonoImageDownsampleType=/Bicubic -dMonoImageResolution=144 -sOutputFile=$1.compressed.pdf $1;
+}
 
 # Fancy prompt with time measuring, etc.
 print_elapsed () {
