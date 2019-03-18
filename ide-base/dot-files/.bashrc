@@ -1,11 +1,8 @@
 # Appended to the default .bashrc via Docker
 
 # Assume color for ls, tmux
-alias ls='ls --color=auto'
-alias tmux='tmux -2'
-
-# Other aliases
 alias ls="ls --color=auto -v"  # Color, use natural sorting for numbers
+alias tmux='tmux -2'
 
 # Use vim to edit git messages, etc
 export EDITOR=vim
