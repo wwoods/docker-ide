@@ -15,9 +15,24 @@ export HISTCONTROL=ignoreboth:erasedups
 
 # Allow "pdfcompress" command
 pdfcompress () {
+    if [[ "${@#--help}" != "$@" || "$@" = "" ]]; then
+        echo "Usage: pdfcompress <path/to/file.pdf>"
+        echo ""
+        echo "Will create <path/to/file.compressed.pdf>"
+        echo "See also: pdfconcat, pdfextract"
+        return 1
+    fi
     gs -q -dNOPAUSE -dBATCH -dSAFER -sDEVICE=pdfwrite -dCompatibilityLevel=1.5 -dPDFSETTINGS=/screen -dEmbedAllFonts=true -dSubsetFonts=true -dColorImageDownsampleType=/Bicubic -dColorImageResolution=144 -dGrayImageDownsampleType=/Bicubic -dGrayImageResolution=144 -dMonoImageDownsampleType=/Bicubic -dMonoImageResolution=144 -sOutputFile=${1::-4}.compressed.pdf $1;
 }
 pdfconcat () {
+    if [[ "${@#--help}" != "$@" || "$@" = "" ]]; then
+        echo "Usage: pdfconcat <out.pdf> <in1.pdf> [<in2.pdf> ...]"
+        echo ""
+        echo "Will create <out.pdf> by concatenating PDFs in subsequent arguments."
+        echo "See also: pdfcompress, pdfextract"
+        return 1
+    fi
+
     OUTPUT="$1"
     shift
     gs -o $OUTPUT -sDEVICE=pdfwrite \
@@ -40,6 +55,13 @@ pdfconcat () {
 }
 pdfextract () {
     # Extract pages from a PDF; usage:
+    if [[ "${@#--help}" != "$@" || "$@" = "" ]]; then
+        echo "Usage: pdfextract <path/to/file.pdf> <first> <last> [<first> <last>...]"
+        echo ""
+        echo "Will create <path/to/file.extracted.pdf> using pages between (inclusive) <first> and <last>, optionally from multiple subsets concatenated together."
+        echo "See also: pdfconcat, pdfextract"
+        return 1
+    fi
     # pdfextract {pdf} {first} {last} [{first} {last}...]
     if [ "$#" -lt "3" ]; then
         echo 'Need at least 3 args'
