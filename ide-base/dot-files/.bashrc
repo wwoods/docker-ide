@@ -114,7 +114,7 @@ print_elapsed () {
   echo -e $SUFFIX
 }
 print_path () {
-  pwd | awk '{print substr($1, length($1) - 54)}'
+  pwd | awk '{print substr($0, length($0) - 54)}'
   # Update our command number....
   echo `expr \`cat $PT_CMD_FILE 2>/dev/null\` + 1` > $PT_CMD_FILE
 }
