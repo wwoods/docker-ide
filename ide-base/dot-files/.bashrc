@@ -35,7 +35,7 @@ pdfconcat () {
 
     OUTPUT="$1"
     shift
-    gs -o $OUTPUT -sDEVICE=pdfwrite \
+    gs -o $OUTPUT -sDEVICE=pdfwrite -dPrinted=false \
         -dAntiAliasColorImage=false                    \
         -dAntiAliasGrayImage=false                     \
         -dAntiAliasMonoImage=false                     \
