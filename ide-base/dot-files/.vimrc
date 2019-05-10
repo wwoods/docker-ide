@@ -138,6 +138,9 @@ Plugin 'kien/ctrlp.vim'
 let g:ctrlp_root_markers = ['tags']
 let g:ctrlp_user_command = ['tags', 'grep -P "F(\$|\t)" %s/tags | cut -f2 | sort -u', 'find %s -type f']
 
+"""" Allows colorization
+Plugin 'chrisbra/Colorizer'
+
 """" git integration (see g?)
 Plugin 'tpope/vim-fugitive'
 "Plugin 'junegunn/gv.vim'  Retired in favor of custom plugin... need to clean
@@ -168,7 +171,7 @@ func! s:WWgstatus_diffFile()
     if l:status == 'staged'
         let l:staged = v:true
     endif
-    call s:WWgdiff_file(l:filename, 'HEAD', '', l:staged, v:false, v:false, v:false)
+    call s:WWgdiff_file(l:filename, 'HEAD', '', l:staged, v:false, v:false)
 endfunc
 func! g:WWgdiff()
     return s:WWgdiff()
@@ -250,24 +253,25 @@ func! s:WWglog(all)
     hi def link wwglogTags Statement
 
     " Bind the keys for viewing the log
-    nnoremap <silent> <buffer> ? :echo "
+    nnoremap <silent> <buffer> g? :echo "
             \git graph bindings (no 'g' prefix needed):\n
-            \? - This help\n
+            \g? - This help\n
             \d - Diff working tree against given commit\n
             \b - Diff working tree against given commit, ignoring whitespace (-b)\n
+            \w - Diff working tree against given commit, diff by word rather than line (--word-diff)\n
             \r - Rebase HEAD off the selected commit\n
             \Left arrow or h - Skip left 80 chars\n
             \Right arrow or l - Skip right 80 chars\n
             \Return - View commit\n
             \q - Quit\n
             \"<cr>
-    nmap <silent> <buffer> g? ?
     nnoremap <silent> <buffer> q :q!<cr>
     nnoremap <silent> <buffer> <cr> :call <SID>WWglog_viewCommit('', b:file)<cr>
     nnoremap <silent> <buffer> <space> :call <SID>WWglog_viewCommit('', b:file)<cr>
     let b:file = l:file
     nnoremap <silent> <buffer> d :call <SID>WWglog_viewCommit('diff', b:file)<cr>
     nnoremap <silent> <buffer> b :call <SID>WWglog_viewCommit('diffb', b:file)<cr>
+    nnoremap <silent> <buffer> w :call <SID>WWglog_viewCommit('diffw', b:file)<cr>
     nnoremap <silent> <buffer> r :call <SID>WWglog_rebaseCommit()<cr>
     nnoremap <silent> <buffer> <left> 80h
     nnoremap <silent> <buffer> h 80h
@@ -382,13 +386,14 @@ func! s:WWgdiff_file(file, commitLeft, commitRight, staged, notThreeWay, noWhite
     let l:file = a:file
     if !empty(l:file)
         " Open out working version as a split
-        let l:file = fnamemodify(a:file, ':p:.')
+        let l:gitdir = fnamemodify(fugitive#extract_git_dir('.'), ':h')
+        let l:file = fnamemodify(l:gitdir . '/' . a:file, ':p:.')
         if a:notThreeWay
             new
             silent! execute 'file ' . escape(l:file, ' ')
             filetype detect
         else
-            silent! execute 'split ' . a:file
+            silent! execute 'split ' . l:file
         endif
         let g:WWgdiff_winCloseMain = v:true
     else
@@ -496,7 +501,8 @@ func! s:WWglog_viewCommit(mode, file)
     " Parameters:
     " mode - '' or 'diff'.  'diff' means against working tree.  'diffb' for
     "     diff against working tree but with -b enabled to hide whitespace
-    "     changes.
+    "     changes.  'diffw' means diff against working tree with
+    "     --word-diff=color.  Requires VIM version 8 or later.
     " file - '' or file path.  '' means all files.
     let l:commit = s:WWglog_getCommit()
     if empty(l:commit)
@@ -508,17 +514,29 @@ func! s:WWglog_viewCommit(mode, file)
         return
     endif
 
-    if empty(a:mode)
+    let l:use_color = v:false
+    let l:mode = a:mode
+    let l:errormsg = ''
+    if v:version < 800 && l:mode == 'diffw'
+        let l:mode = 'diff'
+        let l:errormsg = l:errormsg .  "--word-diff requires VIM version 8 or higher.  "
+    endif
+
+    if empty(l:mode)
         let l:title = '//git/show'
         let l:cmd = 'git show ' . l:commit . ' -- ' . a:file
-    elseif a:mode == 'diff'
+    elseif l:mode == 'diff'
         let l:title = '//git/diff'
         let l:cmd = 'git diff --no-color ' . l:commit . ' -- ' . a:file
-    elseif a:mode == 'diffb'
+    elseif l:mode == 'diffb'
         let l:title = '//git/diff'
         let l:cmd = 'git diff -b --no-color ' . l:commit . ' -- ' . a:file
+    elseif l:mode == 'diffw'
+        let l:title = '//git/diff'
+        let l:cmd = 'git diff --word-diff=color ' . l:commit . ' -- ' . a:file
+        let l:use_color = v:true
     else
-        echom "ERROR"
+        echom "ERROR: " . l:mode
         return
     endif
 
@@ -533,6 +551,16 @@ func! s:WWglog_viewCommit(mode, file)
 
     " Syntax setup
     setf diff
+    if l:use_color
+        ColorHighlight!
+        " Color highlighting can be lost when switching away; curiously,
+        " re-upping it before leaving fixes the problem.
+        autocmd BufLeave <buffer> :ColorHighlight!
+        setlocal wrap
+    else
+        " For full-line diffs, wrap is not necessary
+        setlocal nowrap
+    endif
     "syn clear
     "syn match wwglogDiffAdded /\v^\+.*/
     "syn match wwglogDiffRemoved /\v^-.*/
@@ -556,7 +584,11 @@ func! s:WWglog_viewCommit(mode, file)
     nnoremap <silent> <buffer> q :q!<cr>
 
     " Cleanup
-    setlocal nomodifiable nowrap
+    setlocal nomodifiable
+
+    if !empty(l:errormsg)
+        redraw | echom l:errormsg
+    endif
 endfunc
 func! s:WWglog_viewCommit_diffFold(commit, mode)
     let line = getline('.')
@@ -1007,6 +1039,7 @@ inoremap ø <C-o>dw
 " Note that <C-w> doesn't work here, as it would stop at insert boundary:
 " https://github.com/vim/vim/issues/964 .  Instead, rely on 'db', using <C-o>
 " to access it.
+set backspace=indent,eol,start
 imap <C-backspace> <C-\>
 inoremap <C-\> <C-\><C-o>db
 imap <C-delete> <C-o>dw
