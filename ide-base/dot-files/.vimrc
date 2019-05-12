@@ -533,7 +533,7 @@ func! s:WWglog_viewCommit(mode, file)
         let l:cmd = 'git diff -b --no-color ' . l:commit . ' -- ' . a:file
     elseif l:mode == 'diffw'
         let l:title = '//git/diff'
-        let l:cmd = 'git diff --word-diff=color ' . l:commit . ' -- ' . a:file
+        let l:cmd = 'git diff --word-diff=color --word-diff-regex="[a-zA-Z0-9_]+|." ' . l:commit . ' -- ' . a:file
         let l:use_color = v:true
     else
         echom "ERROR: " . l:mode
