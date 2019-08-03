@@ -888,7 +888,7 @@ Plugin 'tmux-plugins/vim-tmux-focus-events'
 " imaps don't really add any value...
 let g:vimtex_mappings_enabled=0
 let g:vimtex_imaps_enabled=0
-Plugin 'lervag/vimtex'
+"Plugin 'lervag/vimtex'
 
 """" Status bar mods
 Plugin 'bling/vim-airline'

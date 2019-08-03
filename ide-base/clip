@@ -1,0 +1,214 @@
+#!/usr/bin/env python3
+
+import click
+import moviepy.editor as editor
+import numpy as np
+import threading
+import time
+
+@click.command()
+@click.option('-o', '--output', type=str, default=None, help="Where to save "
+        "the resulting video file.  Recommended .mp4 extension.")
+@click.argument('files', nargs=-1)
+@click.option('--fps', default=1, type=float, help="Framerate with which the "
+        "video will be saved / viewed.")
+@click.option('-n', '--sort/--no-sort', default=False, help="Glob does not "
+        "naturally sort; this may be passed to sort the FILES argument before "
+        "making the video.")
+@click.option('-s', '--scale', default=1, type=float, help="Scale the images "
+        "by this amount to make the final movie.")
+def main(output, files, fps, sort, scale):
+    """Python script for viewing / analyzing a sequence of images as a movie.
+
+    If OUTPUT is unspecified, will open an interactive viewer for the passed
+    files.
+    """
+    if sorted:
+        files = sorted(files)
+
+    # Load images manually, ensure all same size
+    import imageio
+    ims = [imageio.imread(f) for f in files]
+    sz = tuple(min(i.shape[s] for i in ims) for s in range(len(ims[0].shape)))
+    ims_new = []
+    for im in ims:
+        if im.shape == sz:
+            ims_new.append(im)
+        else:
+            print("WARNING: images of different shapes, some clipped")
+            ims_new.append(im.__getitem__([slice(None, s) for s in sz]))
+    ims = ims_new
+
+    # Moviepy only likes 3-component movies
+    if len(sz) == 2:
+        ims = [np.tile(i[:, :, None], (1, 1, 3)) for i in ims]
+
+    # Ensure floating point!
+    if ims[0].dtype != np.dtype('uint8'):
+        ims = [i.astype(np.float32) for i in ims]
+        ims = [i.__imul__(255 / i.max()) for i in ims]
+        ims = [i.astype(np.uint8) for i in ims]
+
+    # Assemble into clip
+    c = editor.ImageSequenceClip(ims, fps=fps)
+    if scale != 1:
+        c = c.resize(scale)
+
+    if output is None:
+        _preview(c)
+    else:
+        c.write_videofile(output)
+
+
+def _imdisplay(imarray, screen=None, flipper=None):
+    """Splash the given image array on the given pygame screen"""
+    import pygame as pg
+    a = pg.surfarray.make_surface(imarray.swapaxes(0, 1))
+    if screen is None:
+        screen = pg.display.set_mode(imarray.shape[:2][::-1])
+    screen.blit(a, (0, 0))
+
+    if flipper is not None and flipper:
+        pg.draw.rect(screen, (255, 0, 255), (10, 10, 32, 32))
+
+    pg.display.flip()
+
+
+def _preview(clip):
+    """Custom preview function, since as of 2019-07-26, the moviepy built-in
+    preview() function has two shortcomings:
+
+        1. It does not close the window on completion.
+
+        2. It is not interactive in a useful capacity.
+    """
+    import pygame as pg
+
+    # Internal FPS, regardless of clip FPS.
+    fps = 15
+    dt = 1 / fps
+    clip_end = clip.duration - 1e-3
+    clip_times = np.cumsum(clip.durations)
+
+    # Upscale to appropriate size
+    cw, ch = clip.size
+    ww, wh = pg.display.list_modes()[0]
+    clip_ratio = 0.9 * min(ww / cw, wh / ch)
+    clip = clip.resize(clip_ratio)
+
+    flags = 0  # pg.FULLSCREEN is really, really broken if it crashes
+    screen = None
+    def reinit():
+        nonlocal screen
+        if screen is not None:
+            pg.display.quit()
+        pg.init()
+        pg.display.set_caption('Clip')
+        screen = pg.display.set_mode(clip.size, flags)
+    reinit()
+    try:
+        audio = clip.audio is not None
+        if audio:
+            video_flag = threading.Event()
+            audio_flag = threading.Event()
+            audiothread = threading.Thread(target=clip.audio.preview,
+                    args=(
+                        22050,  # audio_fps
+                        3000,  # audio_buffersize
+                        2,  # audio_nbytes
+                        audio_flag,
+                        video_flag))
+            audiothread.start()
+        try:
+            img = clip.get_frame(0)
+            _imdisplay(img, screen)
+            if audio:  # Synchronized
+                video_flag.set()
+                audio_flag.wait()
+
+            live_playback = True
+            flipper = 0
+            t0 = time.time()
+            t = 0
+
+            mouse_down = None
+            while True:
+                last_live_playback = live_playback
+
+                # Process events
+                for event in pg.event.get():
+                    if event.type == pg.QUIT:
+                        return
+                    elif event.type == pg.KEYDOWN:
+                        if (event.key == pg.K_ESCAPE
+                                or event.key == pg.K_w
+                                    and pg.key.get_mods() & pg.KMOD_CTRL):
+                            return
+                        elif event.key == pg.K_SPACE:
+                            live_playback = not live_playback
+                        elif not live_playback:
+                            frame_idx = np.searchsorted(clip_times, t,
+                                    side='right')
+                            new_frame = None
+                            if event.key == pg.K_RIGHT:
+                                new_frame = frame_idx + 1
+                            elif event.key == pg.K_LEFT:
+                                new_frame = frame_idx - 1
+
+                            if new_frame is not None:
+                                new_frame = max(0, min(len(clip_times) - 1,
+                                        new_frame))
+                                t = clip_times[new_frame] - 0.1 / clip.fps
+                    elif event.type == pg.MOUSEBUTTONDOWN:
+                        x, y = pg.mouse.get_pos()
+                        mousedown = (x / clip_ratio, y / clip_ratio)
+                    elif event.type == pg.MOUSEBUTTONUP:
+                        x, y = pg.mouse.get_pos()
+                        mouseup = (x / clip_ratio, y / clip_ratio)
+                        # YAML-friendly format.
+                        print(f'- {int(mousedown[0])}, {int(mousedown[1])}, {int(mouseup[0])}, {int(mouseup[1])}')
+
+                # Advance timer if live
+                if live_playback and not last_live_playback:
+                    # Re-start animation
+                    t = 0
+                    t0 = time.time()
+                elif live_playback:
+                    t += dt
+                    if t >= clip_end:
+                        t = clip_end
+                        live_playback = False
+
+                # Do what we need to do when live playback is stopped
+                if last_live_playback and not live_playback:
+                    # Stop the audio
+                    audio and video_flag.clear()
+                    # Start blinking
+                    t0 = time.time()
+                    flipper = 0
+
+                # Prefetch current frame
+                img = clip.get_frame(t)
+
+                if live_playback:
+                    pg.time.wait(int(1000 * max(0, t - (time.time() - t0))))
+
+                # Flip buffer
+                _imdisplay(img, screen,
+                        flipper=not live_playback and (flipper % 1 < 0.5))
+
+                if not live_playback:
+                    flipper = time.time() - t0
+                    pg.time.wait(int(1000 * dt))
+        finally:
+            # End audio
+            if audio:
+                video_flag.clear()
+    finally:
+        # Forcibly close the window when done.
+        pg.display.quit()
+
+
+if __name__ == '__main__':
+    main()
+

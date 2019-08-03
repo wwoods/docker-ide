@@ -58,6 +58,7 @@ RUN curl -LO http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.s
         && PATH=~/miniconda3/bin:$PATH conda update -y conda
 ENV PATH=${HOME}/miniconda3/bin:${PATH}
 RUN pip install click
+ADD ./clip /usr/bin/clip
 ADD ./dmnt /usr/bin/dmnt
 
 
