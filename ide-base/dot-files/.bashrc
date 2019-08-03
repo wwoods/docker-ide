@@ -22,7 +22,7 @@ pdfcompress () {
         echo "See also: pdfconcat, pdfextract"
         return 1
     fi
-    gs -q -dNOPAUSE -dBATCH -dSAFER -sDEVICE=pdfwrite -dCompatibilityLevel=1.5 -dPDFSETTINGS=/screen -dPrinted=false -dEmbedAllFonts=true -dSubsetFonts=true -dColorImageDownsampleType=/Bicubic -dColorImageResolution=144 -dGrayImageDownsampleType=/Bicubic -dGrayImageResolution=144 -dMonoImageDownsampleType=/Bicubic -dMonoImageResolution=144 -sOutputFile=${1::-4}.compressed.pdf $1;
+    gs -q -dNOPAUSE -dBATCH -dSAFER -sDEVICE=pdfwrite -dCompatibilityLevel=1.5 -dPDFSETTINGS=/screen -dPrinted=false -dAutoRotatePages=/None -dEmbedAllFonts=true -dSubsetFonts=true -dColorImageDownsampleType=/Bicubic -dColorImageResolution=144 -dGrayImageDownsampleType=/Bicubic -dGrayImageResolution=144 -dMonoImageDownsampleType=/Bicubic -dMonoImageResolution=144 -sOutputFile=${1::-4}.compressed.pdf $1;
 }
 pdfconcat () {
     if [[ "${@#--help}" != "$@" || "$@" = "" ]]; then
@@ -35,12 +35,17 @@ pdfconcat () {
 
     OUTPUT="$1"
     shift
-    gs -o $OUTPUT -sDEVICE=pdfwrite -dPrinted=false \
+    gs -o $OUTPUT -dNOPAUSE -dBATCH -dSAFER -sDEVICE=pdfwrite \
+        -dPrinted=false                                \
+        -dCompatibilityLevel=1.5                       \
+        -dEmbedAllFonts=true                           \
+        -dSubsetFonts=true                             \
         -dAntiAliasColorImage=false                    \
         -dAntiAliasGrayImage=false                     \
         -dAntiAliasMonoImage=false                     \
         -dAutoFilterColorImages=false                  \
         -dAutoFilterGrayImages=false                   \
+        -dAutoRotatePages=/None                        \
         -dDownsampleColorImages=false                  \
         -dDownsampleGrayImages=false                   \
         -dDownsampleMonoImages=false                   \
