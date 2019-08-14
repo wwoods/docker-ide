@@ -622,6 +622,32 @@ endfunc
 "Plugin 'tmhedberg/SimpylFold'
 " Remove extraneous whitespace when edit mode is exited
 Plugin 'thirtythreeforty/lessspace.vim'
+" The plugin "lessspace" by default does its magic on InsertLeave.
+" Unfortunately, in combination with vim-tmux-focus-events, the <C-o> method
+" of leaving insert mode is triggered when switching between panes, which
+" causes InsertLeave, which isn't what we want.  So, re-work the bindings
+" to get around this.
+func! s:lessspace_fix(...)
+    if !exists('g:loaded_lessspace_plugin')
+        call timer_start(10, function('<SID>lessspace_fix'))
+        return
+    endif
+    augroup LessSpace
+        autocmd! InsertEnter
+        autocmd! InsertLeave
+        nnoremap <silent> a a<C-o>:call lessspace#OnInsertEnter()<CR>
+        nnoremap <silent> ea ea<C-o>:call lessspace#OnInsertEnter()<CR>
+        nnoremap <silent> A A<C-o>:call lessspace#OnInsertEnter()<CR>
+        nnoremap <silent> i i<C-o>:call lessspace#OnInsertEnter()<CR>
+        nnoremap <silent> I I<C-o>:call lessspace#OnInsertEnter()<CR>
+        nnoremap <silent> o o<C-o>:call lessspace#OnInsertEnter()<CR>
+        nnoremap <silent> O O<C-o>:call lessspace#OnInsertEnter()<CR>
+        vnoremap <silent> I I<C-o>:call lessspace#OnInsertEnter()<CR>
+        inoremap <silent> <Esc> <C-o>:call lessspace#OnInsertExit()<CR><Esc>
+    augroup END
+endfunc
+call s:lessspace_fix()
+
 Plugin 'ajh17/VimCompletesMe'
 set completeopt+=menuone
 autocmd FileType *
@@ -937,6 +963,10 @@ else
     " Set up clipboard to interface with OS by default.
     set clipboard=unnamedplus
 endif
+
+" Set terminal key timeout to be quite small, to prevent unnecessary delays in
+" input sequences.
+set ttimeoutlen=5
 
 " Allow reloading a file that's not changed in vim but has been changed
 " elsewhere.
