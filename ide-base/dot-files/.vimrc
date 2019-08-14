@@ -930,6 +930,14 @@ set statusline+=%{ConflictedVersion()}
 let g:airline_extensions=[]
 let g:airline_highlighting_cache=1
 
+" Fix clipboard when no native support exists
+if !has('clipboard')
+    echoe 'VIM will not have clipboard access; see https://vi.stackexchange.com/a/96.  On e.g. Ubuntu, install vim-gnome to fix this.'
+else
+    " Set up clipboard to interface with OS by default.
+    set clipboard=unnamedplus
+endif
+
 " Allow reloading a file that's not changed in vim but has been changed
 " elsewhere.
 set autoread
