@@ -642,7 +642,7 @@ func! s:lessspace_fix(...)
         nnoremap <silent> I I<C-o>:call lessspace#OnInsertEnter()<CR>
         nnoremap <silent> o o<C-o>:call lessspace#OnInsertEnter()<CR>
         nnoremap <silent> O O<C-o>:call lessspace#OnInsertEnter()<CR>
-        vnoremap <silent> I I<C-o>:call lessspace#OnInsertEnter()<CR>
+        xnoremap <silent> I I<C-o>:call lessspace#OnInsertEnter()<CR><C-o>gvI
         inoremap <silent> <Esc> <C-o>:call lessspace#OnInsertExit()<CR><Esc>
     augroup END
 endfunc
