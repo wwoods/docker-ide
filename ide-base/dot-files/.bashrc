@@ -1,5 +1,12 @@
 # Appended to the default .bashrc via Docker
 
+# If not running interactively, don't do anything
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+
+
 # Assume color for ls, tmux
 alias ls="ls --color=auto -v"  # Color, use natural sorting for numbers
 alias tmux='tmux -2'

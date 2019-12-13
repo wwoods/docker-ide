@@ -39,6 +39,17 @@ do
     eval $CMD
 done
 
+echo "Linking .bashrc"
+if [ ! -f "$HOME/.bash_profile" ]; then
+    echo '. $HOME/.bashrc' > "$HOME/.bash_profile"
+fi
+if grep -q docker-ide $HOME/.bashrc; then
+    echo '.bashrc already calls docker-ide version'
+else
+    echo '. '`pwd`'/ide-base/dot-files/.bashrc' >> $HOME/.bashrc
+fi
+
+
 echo "Installing vim plugins..."
 VUNDLE="$HOME/.vim/bundle/Vundle.vim"
 if [ -d "$VUNDLE" ]; then
