@@ -127,6 +127,32 @@ call vundle#begin('~/.vim/bundle')
 
 Plugin 'gmarik/Vundle.vim'
 
+Plugin 'wwoods/hexmode'
+func! s:WWhexgoto(a, indexed)
+    " Goto 1-based line, optionally with hex offset
+    if a:a =~ "^0x"
+        let a = str2nr(a:a[2:], 16)
+    elseif a:a =~ "h$"
+        let a = str2nr(a:a[:-1], 16)
+    else
+        let a = str2nr(a:a, 10)
+    endif
+
+    " Convert to 0-index
+    let a = a - str2nr(a:indexed)
+
+    " Each line starts with 8-byte address, followed by ": ", followed by
+    " 8 tuples of type "xxxx ".
+    " This means 16 bytes per line, and chars start at 52
+    let boff = a % 16
+    let bline = a / 16
+    let b = bline * 68 + 52 + boff
+    exec 'goto ' . b
+    echom a . " -> " . b
+endfunc
+command -nargs=1 Hexgoto call s:WWhexgoto(<args>, 0)
+command -nargs=1 Hexgoto1 call s:WWhexgoto(<args>, 1)
+
 " Custom plugins AND configuration...
 
 """" EasyMotion - Allows <leader><leader>(b|e) to jump to (b)eginning or (end)
