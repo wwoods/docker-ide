@@ -20,6 +20,17 @@ export EDITOR=vim
 # erasedups: Active erase prior duplicates of current line
 export HISTCONTROL=ignoreboth:erasedups
 
+# Expose "ssht" command, which attaches to tmux on a given server
+ssht () {
+    if [[ "${@#--help}" != "$@" || "$@" = "" ]]; then
+        echo "Usage: ssht [flags] <server>"
+        echo ""
+        echo "Connects to <server>, and executes 'tmux attach'."
+        return 1
+    fi
+    ssh -t $* tmux attach
+}
+
 # Allow "pdfcompress" command
 pdfcompress () {
     if [[ "${@#--help}" != "$@" || "$@" = "" ]]; then
@@ -29,7 +40,7 @@ pdfcompress () {
         echo "See also: pdfconcat, pdfextract"
         return 1
     fi
-    gs -q -dNOPAUSE -dBATCH -dSAFER -sDEVICE=pdfwrite -dCompatibilityLevel=1.5 -dPDFSETTINGS=/screen -dPrinted=false -dAutoRotatePages=/None -dEmbedAllFonts=true -dSubsetFonts=true -dColorImageDownsampleType=/Bicubic -dColorImageResolution=144 -dGrayImageDownsampleType=/Bicubic -dGrayImageResolution=144 -dMonoImageDownsampleType=/Bicubic -dMonoImageResolution=144 -sOutputFile=${1::-4}.compressed.pdf $1;
+    gs -q -dNOPAUSE -dBATCH -dSAFER -sDEVICE=pdfwrite -dCompatibilityLevel=1.5 -dPDFSETTINGS=/screen -dPrinted=false -dAutoRotatePages=/None -dEmbedAllFonts=true -dSubsetFonts=true -dColorImageDownsampleType=/Bicubic -dColorImageResolution=144 -dGrayImageDownsampleType=/Bicubic -dGrayImageResolution=144 -dMonoImageDownsampleType=/Bicubic -dMonoImageResolution=144 -sOutputFile="${1::-4}.compressed.pdf" "$1";
 }
 pdfconcat () {
     if [[ "${@#--help}" != "$@" || "$@" = "" ]]; then

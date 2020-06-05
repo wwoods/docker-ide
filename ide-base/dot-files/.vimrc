@@ -167,6 +167,9 @@ let g:ctrlp_user_command = ['tags', 'grep -P "F(\$|\t)" %s/tags | cut -f2 | sort
 """" Allows colorization
 Plugin 'chrisbra/Colorizer'
 
+"""" Json5
+Plugin 'GutenYe/json5.vim'
+
 """" git integration (see g?)
 Plugin 'tpope/vim-fugitive'
 "Plugin 'junegunn/gv.vim'  Retired in favor of custom plugin... need to clean
@@ -953,13 +956,18 @@ Plugin 'leafgarland/typescript-vim'
 Plugin 'wannesm/wmgraphviz.vim'
 
 
+"""" Python typechecking
+" BROKEN Plugin 'integralist/vim-mypy'
+Plugin 'dense-analysis/ale'
+
+
 " After all plugins...
 call vundle#end()
 filetype plugin indent on
 
 """"""" General coding stuff """""""
-" Highlight 80th column
-set colorcolumn=80
+" Highlight 81st column (touching this is too wide)
+set colorcolumn=81
 " Always show status bar
 set laststatus=2
 " Let plugins show effects after 500ms, not 4s
@@ -1015,7 +1023,7 @@ autocmd FileType rst setlocal shiftwidth=2 tabstop=2 softtabstop=2
 """"""" Typescript stuff """""""
 autocmd BufNewFile,BufRead *.pug set filetype=pug
 autocmd BufNewFile,BufRead *.vue set filetype=vue
-autocmd FileType css,html,json,scss,typescript,javascript,pug,vue,yaml setlocal shiftwidth=2 tabstop=2 softtabstop=2
+autocmd FileType css,html,json,json5,scss,typescript,javascript,pug,vue,yaml setlocal shiftwidth=2 tabstop=2 softtabstop=2
 
 
 
