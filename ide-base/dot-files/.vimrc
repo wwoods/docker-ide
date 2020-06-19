@@ -164,6 +164,9 @@ Plugin 'kien/ctrlp.vim'
 let g:ctrlp_root_markers = ['tags']
 let g:ctrlp_user_command = ['tags', 'grep -P "F(\$|\t)" %s/tags | cut -f2 | sort -u', 'find %s -type f']
 
+"""" :DirDiff -- diff two directories
+Plugin 'will133/vim-dirdiff'
+
 """" Allows colorization
 Plugin 'chrisbra/Colorizer'
 
@@ -629,7 +632,7 @@ func! s:WWglog_viewCommit_diffFold(commit, mode)
     let fname = m[1]
     " Convert fname from git root to local, make sure current directory is
     " prefixed to relative path.
-    let gitdir = fnamemodify(fugitive#extract_git_dir('.'), ':h')
+    let gitdir = fnamemodify(fugitive#extract_git_dir('.'), ':.:h')
     let fname = gitdir . '/' . fname
     if empty(a:mode)
         " Commit only
