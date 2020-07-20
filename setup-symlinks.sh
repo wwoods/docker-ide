@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /usr/bin/env bash
 
 set -e
 
@@ -57,7 +57,7 @@ if [ -d "$VUNDLE" ]; then
 else
     git clone https://github.com/VundleVim/Vundle.vim.git "$VUNDLE"
 fi
-/bin/bash -c 'echo | echo | vim +PluginInstall +qall &>/dev/null'
+bash -c 'echo | echo | vim +PluginInstall +qall &>/dev/null'
 
 echo "Installing ctags..."
 CTAGS="$HOME/.ctags.inst"

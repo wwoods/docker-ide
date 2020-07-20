@@ -122,8 +122,10 @@ endfunc
 set nocompatible
 filetype off
 
-set rtp+=~/.vim/bundle/Vundle.vim
-call vundle#begin('~/.vim/bundle')
+let vimfolder = $MYVIMRC == $HOME . '/.vimrc' ? $HOME . '/.vim' : fnamemodify($MYVIMRC, ':h')
+
+exec  'set rtp+=' . vimfolder . '/bundle/Vundle.vim'
+call vundle#begin(vimfolder . '/bundle')
 
 Plugin 'gmarik/Vundle.vim'
 
@@ -925,7 +927,7 @@ func! s:WWTagbarToggle()
 endfunc
 nnoremap <silent> t :call <SID>WWTagbarToggle()<cr>
 " Tagbar, while great, needs g:tagbar_type_<lang> defined on occasion...
-source ~/.ctags.vimrc
+exec 'source ' . fnamemodify($MYVIMRC, ':h') . '/.ctags.vimrc'
 
 """" Let FocusGained and FocusLost work when inside of tmux.
 Plugin 'tmux-plugins/vim-tmux-focus-events'
