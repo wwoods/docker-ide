@@ -175,6 +175,9 @@ Plugin 'chrisbra/Colorizer'
 """" Json5
 Plugin 'GutenYe/json5.vim'
 
+"""" Mundo, for viewing undo tree per :MundoToggle
+Plugin 'simnalamburt/vim-mundo'
+
 """" git integration (see g?)
 Plugin 'tpope/vim-fugitive'
 "Plugin 'junegunn/gv.vim'  Retired in favor of custom plugin... need to clean
