@@ -387,6 +387,8 @@ func! s:WWgdiff_quit(forced)
     unlet g:WWgdiff_winMain
     unlet g:WWgdiff_winPast
     unlet g:WWgdiff_winNext
+
+    diffoff!
 endfunc
 func! s:WWgdiff_quitMaybe()
     " Called when window changed
@@ -421,9 +423,10 @@ func! s:WWgdiff_file(file, commitLeft, commitRight, staged, notThreeWay, noWhite
     endif
 
     let l:file = a:file
+    let l:filerel = a:file
+    let l:gitdir = fnamemodify(FugitiveExtractGitDir('.'), ':h')
     if !empty(l:file)
         " Open out working version as a split
-        let l:gitdir = fnamemodify(FugitiveExtractGitDir('.'), ':h')
         let l:file = fnamemodify(l:gitdir . '/' . a:file, ':p:.')
         if a:notThreeWay
             new
@@ -436,10 +439,9 @@ func! s:WWgdiff_file(file, commitLeft, commitRight, staged, notThreeWay, noWhite
     else
         "File already open
         let l:file = expand('%:p:.')
+        let l:filerel = l:file[strlen(fnamemodify(l:gitdir, ':p:.')):]
         let g:WWgdiff_winCloseMain = v:false
     endif
-
-    let l:filerel = l:file "  =~ '\v^\./|^\.\./' ? l:file : './' . l:file
 
     let l:filetype = &filetype
     let l:splitter = &splitright
