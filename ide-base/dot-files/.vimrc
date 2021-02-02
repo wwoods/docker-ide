@@ -438,8 +438,9 @@ func! s:WWgdiff_file(file, commitLeft, commitRight, staged, notThreeWay, noWhite
         let g:WWgdiff_winCloseMain = v:true
     else
         "File already open
-        let l:file = expand('%:p:.')
-        let l:filerel = l:file[strlen(fnamemodify(l:gitdir, ':p:.')):]
+        let l:file = expand('%:p')
+        let l:filerel = l:file[strlen(fnamemodify(l:gitdir, ':p')):]
+        let l:file = fnamemodify(l:file, ':.')
         let g:WWgdiff_winCloseMain = v:false
     endif
 
