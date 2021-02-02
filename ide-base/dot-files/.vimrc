@@ -1022,6 +1022,10 @@ autocmd FileType gitcommit setlocal spell
 syntax enable
 set number showmatch
 let python_highlight_all = 1
+" See https://stackoverflow.com/a/37889460/160205.
+" Basically, colon is a bit broken, so remove it.
+autocmd FileType python setlocal indentkeys-=<:>
+autocmd FileType python setlocal indentkeys-=:
 
 
 """"""" ReStructuredText stuff """""""
@@ -1031,6 +1035,7 @@ autocmd FileType rst setlocal shiftwidth=2 tabstop=2 softtabstop=2
 """"""" Typescript stuff """""""
 autocmd BufNewFile,BufRead *.pug set filetype=pug
 autocmd BufNewFile,BufRead *.vue set filetype=vue
+autocmd BufNewFile,BufRead *.json5 set filetype=json5
 autocmd FileType css,html,json,json5,scss,typescript,javascript,pug,vue,yaml setlocal shiftwidth=2 tabstop=2 softtabstop=2
 
 
