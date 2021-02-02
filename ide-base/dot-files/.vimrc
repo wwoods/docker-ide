@@ -122,7 +122,7 @@ endfunc
 set nocompatible
 filetype off
 
-let vimfolder = $MYVIMRC == $HOME . '/.vimrc' ? $HOME . '/.vim' : fnamemodify($MYVIMRC, ':h')
+let vimfolder = resolve($MYVIMRC) == resolve($HOME . '/.vimrc') ? $HOME . '/.vim' : fnamemodify($MYVIMRC, ':h')
 
 exec  'set rtp+=' . vimfolder . '/bundle/Vundle.vim'
 call vundle#begin(vimfolder . '/bundle')
