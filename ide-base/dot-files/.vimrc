@@ -423,7 +423,7 @@ func! s:WWgdiff_file(file, commitLeft, commitRight, staged, notThreeWay, noWhite
     let l:file = a:file
     if !empty(l:file)
         " Open out working version as a split
-        let l:gitdir = fnamemodify(fugitive#extract_git_dir('.'), ':h')
+        let l:gitdir = fnamemodify(FugitiveExtractGitDir('.'), ':h')
         let l:file = fnamemodify(l:gitdir . '/' . a:file, ':p:.')
         if a:notThreeWay
             new
@@ -439,7 +439,7 @@ func! s:WWgdiff_file(file, commitLeft, commitRight, staged, notThreeWay, noWhite
         let g:WWgdiff_winCloseMain = v:false
     endif
 
-    let l:filerel = l:file =~ '\v^\./|^\.\./' ? l:file : './' . l:file
+    let l:filerel = l:file "  =~ '\v^\./|^\.\./' ? l:file : './' . l:file
 
     let l:filetype = &filetype
     let l:splitter = &splitright
@@ -635,10 +635,6 @@ func! s:WWglog_viewCommit_diffFold(commit, mode)
     endif
 
     let fname = m[1]
-    " Convert fname from git root to local, make sure current directory is
-    " prefixed to relative path.
-    let gitdir = fnamemodify(fugitive#extract_git_dir('.'), ':.:h')
-    let fname = gitdir . '/' . fname
     if empty(a:mode)
         " Commit only
         call s:WWgdiff_file(fname, a:commit . '~1', a:commit, v:false, v:true, v:false)
