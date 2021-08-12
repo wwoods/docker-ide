@@ -8,6 +8,7 @@ esac
 
 
 # Assume color for ls, tmux
+alias gitmeld="git difftool --dir-diff --tool=meld"
 alias ls="ls --color=auto -v"  # Color, use natural sorting for numbers
 alias tmux='tmux -2'
 
