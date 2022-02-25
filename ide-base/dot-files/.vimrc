@@ -1116,9 +1116,9 @@ inoremap æ <C-o>e<right>
 " escape+z.
 " Why this one is complicated - <C-o> at end of line moves cursor by one
 " character, which means a trailing character could be left.
-inoremap <expr> ú col('.')>1 ? 'T<Left><C-o>db<Delete>' : '<Backspace>T<Left><c-o>db<Delete>'
+inoremap <expr> ú col('.')>1 ? 'T<Left><C-o>"_db<Delete>' : '<Backspace>T<Left><c-o>"_db<Delete>'
 " Requires binding option+forward delete to escape
-inoremap ø <C-o>dw
+inoremap ø <C-o>"_dw
 
 " Linux / windows ctrl+backspace ctrl+delete
 " Note that ctrl+backspace doesn't work in Linux :(
@@ -1127,10 +1127,10 @@ inoremap ø <C-o>dw
 " to access it.
 set backspace=indent,eol,start
 imap <C-backspace> <C-\>
-inoremap <C-\> <C-\><C-o>db
-imap <C-delete> <C-o>dw
+inoremap <C-\> <C-\><C-o>"_db
+imap <C-delete> <C-o>"_dw
 " For terminals which emit <C-delete> as follows
-imap <C-[>[3;5~ <C-o>dw
+imap <C-[>[3;5~ <C-o>"_dw
 
 " Arrow keys up/down move visually up and down rather than by whole lines.  In
 " other words, wrapped lines will take longer to scroll through, but better
