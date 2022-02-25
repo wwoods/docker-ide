@@ -1,25 +1,6 @@
 # Appended to the default .bashrc via Docker
 
-# If not running interactively, don't do anything
-case $- in
-    *i*) ;;
-      *) return;;
-esac
-
-
-# Assume color for ls, tmux
-alias gitmeld="git difftool --dir-diff --tool=meld"
-alias ls="ls --color=auto -v"  # Color, use natural sorting for numbers
-alias tmux='tmux -2'
-
-# Use vim to edit git messages, etc
-export EDITOR=vim
-
-# Do not duplicate history entries; if the same command is run multiple times,
-# only show it once.
-# ignoreboth: Do not save lines starting with a space, do not save duplicates
-# erasedups: Active erase prior duplicates of current line
-export HISTCONTROL=ignoreboth:erasedups
+#### Functions which should be accessible in other bash scripts
 
 # Expose "ssht" command, which attaches to tmux on a given server
 ssht () {
@@ -54,7 +35,7 @@ pdfconcat () {
 
     OUTPUT="$1"
     shift
-    gs -o $OUTPUT -dNOPAUSE -dBATCH -dSAFER -sDEVICE=pdfwrite \
+    gs -o "$OUTPUT" -dNOPAUSE -dBATCH -dSAFER -sDEVICE=pdfwrite \
         -dPrinted=false                                \
         -dCompatibilityLevel=1.5                       \
         -dEmbedAllFonts=true                           \
@@ -75,15 +56,15 @@ pdfconcat () {
         -dPreserveHalftoneInfo=true                    \
         -dPreserveOPIComments=true                     \
         -dPreserveOverprintSettings=true               \
-        $@
+        "$@"
 }
 pdfextract () {
     # Extract pages from a PDF; usage:
     if [[ "${@#--help}" != "$@" || "$@" = "" ]]; then
-        echo "Usage: pdfextract <path/to/file.pdf> <first> <last> [<first> <last>...]"
+        echo "Usage: pdfextract <path/to/file.pdf> [-o output.pdf] <first> <last> [<first> <last>...]"
         echo ""
-        echo "Will create <path/to/file.extracted.pdf> using pages between (inclusive) <first> and <last>, optionally from multiple subsets concatenated together."
-        echo "See also: pdfconcat, pdfextract"
+        echo "Will create <path/to/file.extracted.pdf> (or <output.pdf>) using pages between (inclusive) <first> and <last>, optionally from multiple subsets concatenated together."
+        echo "See also: pdfcompress, pdfconcat"
         return 1
     fi
     # pdfextract {pdf} {first} {last} [{first} {last}...]
@@ -92,9 +73,15 @@ pdfextract () {
         return 1
     fi
     PDF="$1"
-    PDF_OUT="${1::-4}.extracted.pdf"
-    PDF_MADE="no"
     shift
+    if [ "$1" = "-o" ]; then
+        shift
+        PDF_OUT="$1"
+        shift
+    else
+        PDF_OUT="${PDF::-4}.extracted.pdf"
+    fi
+    PDF_MADE="no"
     while [ "$#" -ge "2" ]; do
         if [ "$PDF_MADE" == "no" ]; then
             echo 'Case 1'
@@ -114,6 +101,27 @@ pdfextract () {
         echo 'Bad number of arguments.'
     fi
 }
+
+#### If not running interactively, don't do anything
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+
+
+# Assume color for ls, tmux
+alias gitmeld="git difftool --dir-diff --tool=meld"
+alias ls="ls --color=auto -v"  # Color, use natural sorting for numbers
+alias tmux='tmux -2'
+
+# Use vim to edit git messages, etc
+export EDITOR=vim
+
+# Do not duplicate history entries; if the same command is run multiple times,
+# only show it once.
+# ignoreboth: Do not save lines starting with a space, do not save duplicates
+# erasedups: Active erase prior duplicates of current line
+export HISTCONTROL=ignoreboth:erasedups
 
 # Fancy prompt with time measuring, etc.
 print_elapsed () {
