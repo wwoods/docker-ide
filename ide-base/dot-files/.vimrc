@@ -237,13 +237,13 @@ nnoremap g? :echo "
             \vim-fugitive key bindings:\n
             \gs - :Gstatus (has its own g? screen; '-' to add/reset staging;\n
             \        however, 'd' has been rebound to an improved Gvdiff, as below)\n
-            \gb - :Gblame\n
+            \gb - :Git blame\n
             \gd - git diff working tree against HEAD.\n
             \gl - git log help.\n
             \gla - git log all.\n
             \glf - git log current file.\n
             \"<cr>
-nnoremap <silent> gb :Gblame<cr>
+nnoremap <silent> gb :Git blame<cr>
 nnoremap <silent> gd :call <SID>WWgdiff_file('', 'HEAD', '', v:false, v:false, v:false)<cr>
 nmap <silent> gl g?
 nnoremap <silent> gla :call <SID>WWglog('--all')<cr>
@@ -265,7 +265,7 @@ func! s:WWglog(all)
     tabnew
     setlocal buftype=nofile bufhidden=wipe noswapfile
     let b:logAll = a:all
-    let l:cmd = 'git log --graph ' . l:all . ' --abbrev-commit --decorate --format=format:"%h - (%ar) %s - %an%d" -- ' . l:file
+    let l:cmd = 'git log --graph ' . l:all . ' --abbrev-commit --decorate --format=format:"%h - (%as) %s - %an%d" -- ' . l:file
     execute 'read !' . escape(l:cmd, '%')
     execute '0'
     normal! dd
