@@ -1027,6 +1027,10 @@ let python_highlight_all = 1
 " Basically, colon is a bit broken, so remove it.
 autocmd FileType python setlocal indentkeys-=<:>
 autocmd FileType python setlocal indentkeys-=:
+" As of late 2021, new vim versions ship with a broken (in my opinion) python
+" indenter, that unnecessarily aligns to parens. Fix that.
+exec 'source ' . fnamemodify(resolve($MYVIMRC), ':h') . '/.vimrc.indent_python'
+autocmd FileType python setlocal indentexpr=g:IndentPythonGetIndent(v:lnum)
 
 
 """"""" ReStructuredText stuff """""""
