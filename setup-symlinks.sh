@@ -71,7 +71,7 @@ else
 
     rm -f "$HOME/bin/ctags" "$HOME/bin/readtags"
 
-    git clone --depth 1 https://github.com/masatake/ctags.git "$CTAGS/repo"
+    git clone --depth 1 https://github.com/universal-ctags/ctags.git "$CTAGS/repo"
     remove_ctags() {
         rm -rf "$CTAGS"
     }
