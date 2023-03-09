@@ -652,8 +652,9 @@ endfunc
 
 
 """" Autocomplete for python and others (IMPORTANT: To use,
-" cd ~/.vim/bundle/YouCompleteMe and run ./install.sh)
-"Plugin 'Valloric/YouCompleteMe'
+" Core Python language autocomplete support
+Plugin 'davidhalter/jedi-vim'
+
 " Python code folding
 "Plugin 'tmhedberg/SimpylFold'
 " Remove extraneous whitespace when edit mode is exited
@@ -681,12 +682,19 @@ func! s:lessspace_fix(...)
         nnoremap <silent> s s<C-o>:call lessspace#OnInsertEnter()<CR>
         nnoremap <silent> S S<C-o>:call lessspace#OnInsertEnter()<CR>
         xnoremap <silent> I I<C-o>:call lessspace#OnInsertEnter()<CR><C-o>gvI
-        inoremap <silent> <Esc> <C-o>:call lessspace#OnInsertExit()<CR><Esc>
+        " Added <C-e> to cancel any autocomplete
+        inoremap <silent> <Esc> <C-e><C-o>:call lessspace#OnInsertExit()<CR><Esc>
     augroup END
 endfunc
 call s:lessspace_fix()
 
-Plugin 'ajh17/VimCompletesMe'
+" General completer
+" YouCompleteMe is awful to setup, and heavy handed. VimCompletesMe was great,
+" but is unsupported as of early 2023. So, vim-mucomplete
+" cd ~/.vim/bundle/YouCompleteMe and run ./install.sh)
+"Plugin 'Valloric/YouCompleteMe'
+"Plugin 'ajh17/VimCompletesMe'
+Plugin 'lifepillar/vim-mucomplete'
 set completeopt+=menuone
 autocmd FileType *
             \ if &omnifunc == "" |
