@@ -683,8 +683,17 @@ func! s:lessspace_fix(...)
         nnoremap <silent> S S<C-o>:call lessspace#OnInsertEnter()<CR>
         xnoremap <silent> I I<C-o>:call lessspace#OnInsertEnter()<CR><C-o>gvI
         " Added <C-e> to cancel any autocomplete
-        inoremap <silent> <Esc> <C-e><C-o>:call lessspace#OnInsertExit()<CR><Esc>
+        inoremap <expr> <Esc> <SID>lessspace_esc_check()
     augroup END
+endfunc
+func! s:lessspace_esc_check()
+    " Run <C-e> if pop up menu (PUM) is active; if it is, then <C-o> does not
+    " have the same meaning until after <C-e>r
+    let l:cmd = "\<C-o>:call lessspace#OnInsertExit()\<CR>\<Esc>"
+    if complete_info().mode != ""
+        let l:cmd = "\<C-e>" . l:cmd
+    endif
+    return l:cmd
 endfunc
 call s:lessspace_fix()
 
