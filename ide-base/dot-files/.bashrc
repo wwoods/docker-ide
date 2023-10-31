@@ -123,6 +123,9 @@ export EDITOR=vim
 # erasedups: Active erase prior duplicates of current line
 export HISTCONTROL=ignoreboth:erasedups
 
+# Keep per-pane history within tmux
+source $(dirname ${BASH_SOURCE})/.bashrc.tmux-history
+
 # Fancy prompt with time measuring, etc.
 print_elapsed () {
   NOW=`date +%s%N`
