@@ -1067,6 +1067,8 @@ autocmd FileType tex setlocal shiftwidth=2 tabstop=2 softtabstop=2
 autocmd FileType tex setlocal spell
 " LaTeX-Box indentation does not work well in practice
 let g:tex_flavor = 'latex'
+" Do NOT double-indent items... they're already indented once
+let g:tex_indent_items = 0
 
 
 """"""" General appearance stuff """""""
