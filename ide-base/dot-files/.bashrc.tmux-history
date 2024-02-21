@@ -23,4 +23,4 @@ else
 fi
 
 # Stash the new history each time a command runs.
-export PROMPT_COMMAND="$PROMPT_COMMAND;history -a"
+export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
